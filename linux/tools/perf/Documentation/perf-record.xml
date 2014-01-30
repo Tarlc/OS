@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<refentry>
+<refmeta>
+<refentrytitle>perf-record</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class="source">perf</refmiscinfo>
+<refmiscinfo class="version"></refmiscinfo>
+<refmiscinfo class="manual">perf Manual</refmiscinfo>
+</refmeta>
+<refnamediv>
+  <refname>perf-record</refname>
+  <refpurpose>Run a command and record its profile into perf.data</refpurpose>
+</refnamediv>
+<refsynopsisdiv id="_synopsis">
+<blockquote>
+<literallayout><emphasis>perf record</emphasis> [-e &lt;EVENT&gt; | --event=EVENT] [-l] [-a] &lt;command&gt;
+<emphasis>perf record</emphasis> [-e &lt;EVENT&gt; | --event=EVENT] [-l] [-a]&#8201;&#8212;&#8201;&lt;command&gt; [&lt;options&gt;]</literallayout>
+</blockquote>
+</refsynopsisdiv>
+<refsect1 id="_description">
+<title>DESCRIPTION</title>
+<simpara>This command runs a command and gathers a performance counter profile
+from it, into perf.data - without displaying anything.</simpara>
+<simpara>This file can then be inspected later on, using <emphasis>perf report</emphasis>.</simpara>
+</refsect1>
+<refsect1 id="_options">
+<title>OPTIONS</title>
+<variablelist>
+<varlistentry>
+<term>
+&lt;command&gt;&#8230;
+</term>
+<listitem>
+<simpara>
+        Any command you can specify in a shell.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-e
+</term>
+<term>
+--event=
+</term>
+<listitem>
+<simpara>
+        Select the PMU event. Selection can be:
+</simpara>
+<itemizedlist>
+<listitem>
+<simpara>
+a symbolic event name (use <emphasis>perf list</emphasis> to list all events)
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a
+          hexadecimal event descriptor.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+a hardware breakpoint event in the form of <emphasis>\mem:addr[:access]</emphasis>
+          where addr is the address in memory you want to break in.
+          Access is the memory access type (read, write, execute) it can
+          be passed as follows: <emphasis>\mem:addr[:[r][w][x]]</emphasis>.
+          If you want to profile read-write accesses in 0x1000, just set
+          <emphasis>mem:0x1000:rw</emphasis>.
+</simpara>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--filter=&lt;filter&gt;
+</term>
+<listitem>
+<simpara>
+        Event filter.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-a
+</term>
+<term>
+--all-cpus
+</term>
+<listitem>
+<simpara>
+        System-wide collection from all CPUs.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-l
+</term>
+<listitem>
+<simpara>
+        Scale counter values.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-p
+</term>
+<term>
+--pid=
+</term>
+<listitem>
+<simpara>
+        Record events on existing process ID (comma separated list).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-t
+</term>
+<term>
+--tid=
+</term>
+<listitem>
+<simpara>
+        Record events on existing thread ID (comma separated list).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-u
+</term>
+<term>
+--uid=
+</term>
+<listitem>
+<simpara>
+        Record events in threads owned by uid. Name or number.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-r
+</term>
+<term>
+--realtime=
+</term>
+<listitem>
+<simpara>
+        Collect data with this RT SCHED_FIFO priority.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-D
+</term>
+<term>
+--no-delay
+</term>
+<listitem>
+<simpara>
+        Collect data without buffering.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-A
+</term>
+<term>
+--append
+</term>
+<listitem>
+<simpara>
+        Append to the output file to do incremental profiling.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-f
+</term>
+<term>
+--force
+</term>
+<listitem>
+<simpara>
+        Overwrite existing data file. (deprecated)
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-c
+</term>
+<term>
+--count=
+</term>
+<listitem>
+<simpara>
+        Event period to sample.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-o
+</term>
+<term>
+--output=
+</term>
+<listitem>
+<simpara>
+        Output file name.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-i
+</term>
+<term>
+--no-inherit
+</term>
+<listitem>
+<simpara>
+        Child tasks do not inherit counters.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-F
+</term>
+<term>
+--freq=
+</term>
+<listitem>
+<simpara>
+        Profile at this frequency.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-m
+</term>
+<term>
+--mmap-pages=
+</term>
+<listitem>
+<simpara>
+        Number of mmap data pages. Must be a power of two.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-g
+</term>
+<term>
+--call-graph
+</term>
+<listitem>
+<simpara>
+        Do call-graph (stack chain/backtrace) recording.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-q
+</term>
+<term>
+--quiet
+</term>
+<listitem>
+<simpara>
+        Don&#8217;t print any message, useful for scripting.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-v
+</term>
+<term>
+--verbose
+</term>
+<listitem>
+<simpara>
+        Be more verbose (show counter open errors, etc).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-s
+</term>
+<term>
+--stat
+</term>
+<listitem>
+<simpara>
+        Per thread counts.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-d
+</term>
+<term>
+--data
+</term>
+<listitem>
+<simpara>
+        Sample addresses.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-T
+</term>
+<term>
+--timestamp
+</term>
+<listitem>
+<simpara>
+        Sample timestamps. Use it with <emphasis>perf report -D</emphasis> to see the timestamps,
+        for instance.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-n
+</term>
+<term>
+--no-samples
+</term>
+<listitem>
+<simpara>
+        Don&#8217;t sample.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-R
+</term>
+<term>
+--raw-samples
+</term>
+<listitem>
+<simpara>
+Collect raw sample records from all opened counters (default for tracepoint counters).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-C
+</term>
+<term>
+--cpu
+</term>
+<listitem>
+<simpara>
+Collect samples only on the list of CPUs provided. Multiple CPUs can be provided as a
+comma-separated list with no space: 0,1. Ranges of CPUs are specified with -: 0-2.
+In per-thread mode with inheritance mode on (default), samples are captured only when
+the thread executes on the designated CPUs. Default is to monitor all CPUs.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-N
+</term>
+<term>
+--no-buildid-cache
+</term>
+<listitem>
+<simpara>
+Do not update the builid cache. This saves some overhead in situations
+where the information in the perf.data file (which includes buildids)
+is sufficient.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-G name,&#8230;
+</term>
+<term>
+--cgroup name,&#8230;
+</term>
+<listitem>
+<simpara>
+monitor only in the container (cgroup) called "name". This option is available only
+in per-cpu mode. The cgroup filesystem must be mounted. All threads belonging to
+container "name" are monitored when they run on the monitored CPUs. Multiple cgroups
+can be provided. Each cgroup is applied to the corresponding event, i.e., first cgroup
+to first event, second cgroup to second event and so on. It is possible to provide
+an empty cgroup (monitor all the time) using, e.g., -G foo,,bar. Cgroups must have
+corresponding events, i.e., they always refer to events defined earlier on the command
+line.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-b
+</term>
+<term>
+--branch-any
+</term>
+<listitem>
+<simpara>
+Enable taken branch stack sampling. Any type of taken branch may be sampled.
+This is a shortcut for --branch-filter any. See --branch-filter for more infos.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-j
+</term>
+<term>
+--branch-filter
+</term>
+<listitem>
+<simpara>
+Enable taken branch stack sampling. Each sample captures a series of consecutive
+taken branches. The number of branches captured with each sample depends on the
+underlying hardware, the type of branches of interest, and the executed code.
+It is possible to select the types of branches captured by enabling filters. The
+following filters are defined:
+</simpara>
+<itemizedlist>
+<listitem>
+<simpara>
+any:  any type of branches
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+any_call: any function call or system call
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+any_ret: any function return or system call return
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+ind_call: any indirect branch
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+u:  only when the branch target is at the user level
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+k: only when the branch target is in the kernel
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+hv: only when the target is at the hypervisor level
+</simpara>
+</listitem>
+</itemizedlist>
+<simpara>The option requires at least one branch type among any, any_call, any_ret, ind_call.
+The privilege levels may be omitted, in which case, the privilege levels of the associated
+event are applied to the branch filter. Both kernel (k) and hypervisor (hv) privilege
+levels are subject to permissions.  When sampling on multiple events, branch stack sampling
+is enabled for all the sampling events. The sampled branch type is the same for all events.
+The various filters must be specified as a comma separated list: --branch-filter any_ret,u,k
+Note that this feature may not be available on all processors.</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 id="_see_also">
+<title>SEE ALSO</title>
+<simpara><citerefentry>
+<refentrytitle>perf-stat</refentrytitle><manvolnum>1</manvolnum>
+</citerefentry>, <citerefentry>
+<refentrytitle>perf-list</refentrytitle><manvolnum>1</manvolnum>
+</citerefentry></simpara>
+</refsect1>
+</refentry>

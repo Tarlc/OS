@@ -1,0 +1,316 @@
+'\" t
+.\"     Title: perf-record
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.77.1 <http://docbook.sf.net/>
+.\"      Date: 03/19/2013
+.\"    Manual: perf Manual
+.\"    Source: perf
+.\"  Language: English
+.\"
+.TH "PERF\-RECORD" "1" "03/19/2013" "perf" "perf Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+perf-record \- Run a command and record its profile into perf\&.data
+.SH "SYNOPSIS"
+.sp
+.nf
+\fIperf record\fR [\-e <EVENT> | \-\-event=EVENT] [\-l] [\-a] <command>
+\fIperf record\fR [\-e <EVENT> | \-\-event=EVENT] [\-l] [\-a] \(em <command> [<options>]
+.fi
+.SH "DESCRIPTION"
+.sp
+This command runs a command and gathers a performance counter profile from it, into perf\&.data \- without displaying anything\&.
+.sp
+This file can then be inspected later on, using \fIperf report\fR\&.
+.SH "OPTIONS"
+.PP
+<command>\&...
+.RS 4
+Any command you can specify in a shell\&.
+.RE
+.PP
+\-e, \-\-event=
+.RS 4
+Select the PMU event\&. Selection can be:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+a symbolic event name (use
+\fIperf list\fR
+to list all events)
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a hexadecimal event descriptor\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+a hardware breakpoint event in the form of
+\fI\emem:addr[:access]\fR
+where addr is the address in memory you want to break in\&. Access is the memory access type (read, write, execute) it can be passed as follows:
+\fI\emem:addr[:[r][w][x]]\fR\&. If you want to profile read\-write accesses in 0x1000, just set
+\fImem:0x1000:rw\fR\&.
+.RE
+.RE
+.PP
+\-\-filter=<filter>
+.RS 4
+Event filter\&.
+.RE
+.PP
+\-a, \-\-all\-cpus
+.RS 4
+System\-wide collection from all CPUs\&.
+.RE
+.PP
+\-l
+.RS 4
+Scale counter values\&.
+.RE
+.PP
+\-p, \-\-pid=
+.RS 4
+Record events on existing process ID (comma separated list)\&.
+.RE
+.PP
+\-t, \-\-tid=
+.RS 4
+Record events on existing thread ID (comma separated list)\&.
+.RE
+.PP
+\-u, \-\-uid=
+.RS 4
+Record events in threads owned by uid\&. Name or number\&.
+.RE
+.PP
+\-r, \-\-realtime=
+.RS 4
+Collect data with this RT SCHED_FIFO priority\&.
+.RE
+.PP
+\-D, \-\-no\-delay
+.RS 4
+Collect data without buffering\&.
+.RE
+.PP
+\-A, \-\-append
+.RS 4
+Append to the output file to do incremental profiling\&.
+.RE
+.PP
+\-f, \-\-force
+.RS 4
+Overwrite existing data file\&. (deprecated)
+.RE
+.PP
+\-c, \-\-count=
+.RS 4
+Event period to sample\&.
+.RE
+.PP
+\-o, \-\-output=
+.RS 4
+Output file name\&.
+.RE
+.PP
+\-i, \-\-no\-inherit
+.RS 4
+Child tasks do not inherit counters\&.
+.RE
+.PP
+\-F, \-\-freq=
+.RS 4
+Profile at this frequency\&.
+.RE
+.PP
+\-m, \-\-mmap\-pages=
+.RS 4
+Number of mmap data pages\&. Must be a power of two\&.
+.RE
+.PP
+\-g, \-\-call\-graph
+.RS 4
+Do call\-graph (stack chain/backtrace) recording\&.
+.RE
+.PP
+\-q, \-\-quiet
+.RS 4
+Don\(cqt print any message, useful for scripting\&.
+.RE
+.PP
+\-v, \-\-verbose
+.RS 4
+Be more verbose (show counter open errors, etc)\&.
+.RE
+.PP
+\-s, \-\-stat
+.RS 4
+Per thread counts\&.
+.RE
+.PP
+\-d, \-\-data
+.RS 4
+Sample addresses\&.
+.RE
+.PP
+\-T, \-\-timestamp
+.RS 4
+Sample timestamps\&. Use it with
+\fIperf report \-D\fR
+to see the timestamps, for instance\&.
+.RE
+.PP
+\-n, \-\-no\-samples
+.RS 4
+Don\(cqt sample\&.
+.RE
+.PP
+\-R, \-\-raw\-samples
+.RS 4
+Collect raw sample records from all opened counters (default for tracepoint counters)\&.
+.RE
+.PP
+\-C, \-\-cpu
+.RS 4
+Collect samples only on the list of CPUs provided\&. Multiple CPUs can be provided as a comma\-separated list with no space: 0,1\&. Ranges of CPUs are specified with \-: 0\-2\&. In per\-thread mode with inheritance mode on (default), samples are captured only when the thread executes on the designated CPUs\&. Default is to monitor all CPUs\&.
+.RE
+.PP
+\-N, \-\-no\-buildid\-cache
+.RS 4
+Do not update the builid cache\&. This saves some overhead in situations where the information in the perf\&.data file (which includes buildids) is sufficient\&.
+.RE
+.PP
+\-G name,\&..., \-\-cgroup name,\&...
+.RS 4
+monitor only in the container (cgroup) called "name"\&. This option is available only in per\-cpu mode\&. The cgroup filesystem must be mounted\&. All threads belonging to container "name" are monitored when they run on the monitored CPUs\&. Multiple cgroups can be provided\&. Each cgroup is applied to the corresponding event, i\&.e\&., first cgroup to first event, second cgroup to second event and so on\&. It is possible to provide an empty cgroup (monitor all the time) using, e\&.g\&., \-G foo,,bar\&. Cgroups must have corresponding events, i\&.e\&., they always refer to events defined earlier on the command line\&.
+.RE
+.PP
+\-b, \-\-branch\-any
+.RS 4
+Enable taken branch stack sampling\&. Any type of taken branch may be sampled\&. This is a shortcut for \-\-branch\-filter any\&. See \-\-branch\-filter for more infos\&.
+.RE
+.PP
+\-j, \-\-branch\-filter
+.RS 4
+Enable taken branch stack sampling\&. Each sample captures a series of consecutive taken branches\&. The number of branches captured with each sample depends on the underlying hardware, the type of branches of interest, and the executed code\&. It is possible to select the types of branches captured by enabling filters\&. The following filters are defined:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+any: any type of branches
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+any_call: any function call or system call
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+any_ret: any function return or system call return
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ind_call: any indirect branch
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+u: only when the branch target is at the user level
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+k: only when the branch target is in the kernel
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+hv: only when the target is at the hypervisor level
+.RE
+.sp
+The option requires at least one branch type among any, any_call, any_ret, ind_call\&. The privilege levels may be omitted, in which case, the privilege levels of the associated event are applied to the branch filter\&. Both kernel (k) and hypervisor (hv) privilege levels are subject to permissions\&. When sampling on multiple events, branch stack sampling is enabled for all the sampling events\&. The sampled branch type is the same for all events\&. The various filters must be specified as a comma separated list: \-\-branch\-filter any_ret,u,k Note that this feature may not be available on all processors\&.
+.RE
+.SH "SEE ALSO"
+.sp
+\fBperf-stat\fR(1), \fBperf-list\fR(1)

@@ -1,0 +1,1 @@
+-g -Wall  -I. -I/usr/local/include    -D_GNU_SOURCE::

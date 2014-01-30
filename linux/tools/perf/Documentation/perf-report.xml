@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<refentry>
+<refmeta>
+<refentrytitle>perf-report</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class="source">perf</refmiscinfo>
+<refmiscinfo class="version"></refmiscinfo>
+<refmiscinfo class="manual">perf Manual</refmiscinfo>
+</refmeta>
+<refnamediv>
+  <refname>perf-report</refname>
+  <refpurpose>Read perf.data (created by perf record) and display the profile</refpurpose>
+</refnamediv>
+<refsynopsisdiv id="_synopsis">
+<blockquote>
+<literallayout><emphasis>perf report</emphasis> [-i &lt;file&gt; | --input=file]</literallayout>
+</blockquote>
+</refsynopsisdiv>
+<refsect1 id="_description">
+<title>DESCRIPTION</title>
+<simpara>This command displays the performance counter profile information recorded
+via perf record.</simpara>
+</refsect1>
+<refsect1 id="_options">
+<title>OPTIONS</title>
+<variablelist>
+<varlistentry>
+<term>
+-i
+</term>
+<term>
+--input=
+</term>
+<listitem>
+<simpara>
+        Input file name. (default: perf.data unless stdin is a fifo)
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-v
+</term>
+<term>
+--verbose
+</term>
+<listitem>
+<simpara>
+        Be more verbose. (show symbol address, etc)
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-d
+</term>
+<term>
+--dsos=
+</term>
+<listitem>
+<simpara>
+        Only consider symbols in these dsos. CSV that understands
+        <ulink url="file://filename">file://filename</ulink> entries.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-n
+</term>
+<term>
+--show-nr-samples
+</term>
+<listitem>
+<simpara>
+        Show the number of samples for each symbol
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--showcpuutilization
+</term>
+<listitem>
+<simpara>
+        Show sample percentage for different cpu modes.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-T
+</term>
+<term>
+--threads
+</term>
+<listitem>
+<simpara>
+        Show per-thread event counters
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-c
+</term>
+<term>
+--comms=
+</term>
+<listitem>
+<simpara>
+        Only consider symbols in these comms. CSV that understands
+        <ulink url="file://filename">file://filename</ulink> entries.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-S
+</term>
+<term>
+--symbols=
+</term>
+<listitem>
+<simpara>
+        Only consider these symbols. CSV that understands
+        <ulink url="file://filename">file://filename</ulink> entries.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--symbol-filter=
+</term>
+<listitem>
+<simpara>
+        Only show symbols that match (partially) with this filter.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-U
+</term>
+<term>
+--hide-unresolved
+</term>
+<listitem>
+<simpara>
+        Only display entries resolved to a symbol.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-s
+</term>
+<term>
+--sort=
+</term>
+<listitem>
+<simpara>
+        Sort by key(s): pid, comm, dso, symbol, parent, srcline.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-p
+</term>
+<term>
+--parent=&lt;regex&gt;
+</term>
+<listitem>
+<simpara>
+        regex filter to identify parent, see: <emphasis>--sort parent</emphasis>
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-x
+</term>
+<term>
+--exclude-other
+</term>
+<listitem>
+<simpara>
+        Only display entries with parent-match.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-w
+</term>
+<term>
+--column-widths=&lt;width[,width&#8230;]&gt;
+</term>
+<listitem>
+<simpara>
+        Force each column width to the provided list, for large terminal
+        readability.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-t
+</term>
+<term>
+--field-separator=
+</term>
+<listitem>
+<simpara>
+        Use a special separator character and don&#8217;t pad with spaces, replacing
+        all occurrences of this separator in symbol names (and other output)
+        with a <emphasis>.</emphasis> character, that thus it&#8217;s the only non valid separator.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-D
+</term>
+<term>
+--dump-raw-trace
+</term>
+<listitem>
+<simpara>
+        Dump raw trace in ASCII.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-g [type,min[,limit],order]
+</term>
+<term>
+--call-graph
+</term>
+<listitem>
+<simpara>
+        Display call chains using type, min percent threshold, optional print
+        limit and order.
+        type can be either:
+</simpara>
+<itemizedlist>
+<listitem>
+<simpara>
+flat: single column, linear exposure of call chains.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+graph: use a graph tree, displaying absolute overhead rates.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+fractal: like graph, but displays relative rates. Each branch of
+                 the tree is considered as a new profiled object.<?asciidoc-br?>
+</simpara>
+<literallayout class="monospaced">order can be either:
+- callee: callee based call graph.
+- caller: inverted caller based call graph.</literallayout>
+<literallayout class="monospaced">Default: fractal,0.5,callee.</literallayout>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-G
+</term>
+<term>
+--inverted
+</term>
+<listitem>
+<simpara>
+        alias for inverted caller based call graph.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--pretty=&lt;key&gt;
+</term>
+<listitem>
+<simpara>
+        Pretty printing style.  key: normal, raw
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--stdio
+</term>
+<listitem>
+<simpara>
+Use the stdio interface.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--tui
+</term>
+<listitem>
+<simpara>
+Use the TUI interface, that is integrated with annotate and allows
+        zooming into DSOs or threads, among other features. Use of --tui
+        requires a tty, if one is not present, as when piping to other
+        commands, the stdio interface is used.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--gtk
+</term>
+<listitem>
+<simpara>
+Use the GTK2 interface.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-k
+</term>
+<term>
+--vmlinux=&lt;file&gt;
+</term>
+<listitem>
+<simpara>
+        vmlinux pathname
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--kallsyms=&lt;file&gt;
+</term>
+<listitem>
+<simpara>
+        kallsyms pathname
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-m
+</term>
+<term>
+--modules
+</term>
+<listitem>
+<simpara>
+        Load module symbols. WARNING: This should only be used with -k and
+        a LIVE kernel.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-f
+</term>
+<term>
+--force
+</term>
+<listitem>
+<simpara>
+        Don&#8217;t complain, do it.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--symfs=&lt;directory&gt;
+</term>
+<listitem>
+<simpara>
+        Look for files with symbols relative to this directory.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-C
+</term>
+<term>
+--cpu
+</term>
+<listitem>
+<simpara>
+Only report samples for the list of CPUs provided. Multiple CPUs can
+        be provided as a comma-separated list with no space: 0,1. Ranges of
+        CPUs are specified with -: 0-2. Default is to report samples on all
+        CPUs.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-M
+</term>
+<term>
+--disassembler-style=
+</term>
+<listitem>
+<simpara>
+Set disassembler style for objdump.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--source
+</term>
+<listitem>
+<simpara>
+        Interleave source code with assembly code. Enabled by default,
+        disable with --no-source.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--asm-raw
+</term>
+<listitem>
+<simpara>
+        Show raw instruction encoding of assembly instructions.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--show-total-period
+</term>
+<listitem>
+<simpara>
+Show a column with the sum of periods.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-I
+</term>
+<term>
+--show-info
+</term>
+<listitem>
+<simpara>
+        Display extended information about the perf.data file. This adds
+        information which may be very large and thus may clutter the display.
+        It currently includes: cpu and numa topology of the host system.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-b
+</term>
+<term>
+--branch-stack
+</term>
+<listitem>
+<simpara>
+        Use the addresses of sampled taken branches instead of the instruction
+        address to build the histograms. To generate meaningful output, the
+        perf.data file must have been obtained using perf record -b or
+        perf record --branch-filter xxx where xxx is a branch filter option.
+        perf report is able to auto-detect whether a perf.data file contains
+        branch stacks and it will automatically switch to the branch view mode,
+        unless --no-branch-stack is used.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--objdump=&lt;path&gt;
+</term>
+<listitem>
+<simpara>
+        Path to objdump binary.
+</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 id="_see_also">
+<title>SEE ALSO</title>
+<simpara><citerefentry>
+<refentrytitle>perf-stat</refentrytitle><manvolnum>1</manvolnum>
+</citerefentry>, <citerefentry>
+<refentrytitle>perf-annotate</refentrytitle><manvolnum>1</manvolnum>
+</citerefentry></simpara>
+</refsect1>
+</refentry>

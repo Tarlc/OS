@@ -1,0 +1,283 @@
+'\" t
+.\"     Title: perf-report
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.77.1 <http://docbook.sf.net/>
+.\"      Date: 03/19/2013
+.\"    Manual: perf Manual
+.\"    Source: perf
+.\"  Language: English
+.\"
+.TH "PERF\-REPORT" "1" "03/19/2013" "perf" "perf Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+perf-report \- Read perf\&.data (created by perf record) and display the profile
+.SH "SYNOPSIS"
+.sp
+.nf
+\fIperf report\fR [\-i <file> | \-\-input=file]
+.fi
+.SH "DESCRIPTION"
+.sp
+This command displays the performance counter profile information recorded via perf record\&.
+.SH "OPTIONS"
+.PP
+\-i, \-\-input=
+.RS 4
+Input file name\&. (default: perf\&.data unless stdin is a fifo)
+.RE
+.PP
+\-v, \-\-verbose
+.RS 4
+Be more verbose\&. (show symbol address, etc)
+.RE
+.PP
+\-d, \-\-dsos=
+.RS 4
+Only consider symbols in these dsos\&. CSV that understands
+\m[blue]\fBfile://filename\fR\m[]
+entries\&.
+.RE
+.PP
+\-n, \-\-show\-nr\-samples
+.RS 4
+Show the number of samples for each symbol
+.RE
+.PP
+\-\-showcpuutilization
+.RS 4
+Show sample percentage for different cpu modes\&.
+.RE
+.PP
+\-T, \-\-threads
+.RS 4
+Show per\-thread event counters
+.RE
+.PP
+\-c, \-\-comms=
+.RS 4
+Only consider symbols in these comms\&. CSV that understands
+\m[blue]\fBfile://filename\fR\m[]
+entries\&.
+.RE
+.PP
+\-S, \-\-symbols=
+.RS 4
+Only consider these symbols\&. CSV that understands
+\m[blue]\fBfile://filename\fR\m[]
+entries\&.
+.RE
+.PP
+\-\-symbol\-filter=
+.RS 4
+Only show symbols that match (partially) with this filter\&.
+.RE
+.PP
+\-U, \-\-hide\-unresolved
+.RS 4
+Only display entries resolved to a symbol\&.
+.RE
+.PP
+\-s, \-\-sort=
+.RS 4
+Sort by key(s): pid, comm, dso, symbol, parent, srcline\&.
+.RE
+.PP
+\-p, \-\-parent=<regex>
+.RS 4
+regex filter to identify parent, see:
+\fI\-\-sort parent\fR
+.RE
+.PP
+\-x, \-\-exclude\-other
+.RS 4
+Only display entries with parent\-match\&.
+.RE
+.PP
+\-w, \-\-column\-widths=<width[,width\&...]>
+.RS 4
+Force each column width to the provided list, for large terminal readability\&.
+.RE
+.PP
+\-t, \-\-field\-separator=
+.RS 4
+Use a special separator character and don\(cqt pad with spaces, replacing all occurrences of this separator in symbol names (and other output) with a
+\fI\&.\fR
+character, that thus it\(cqs the only non valid separator\&.
+.RE
+.PP
+\-D, \-\-dump\-raw\-trace
+.RS 4
+Dump raw trace in ASCII\&.
+.RE
+.PP
+\-g [type,min[,limit],order], \-\-call\-graph
+.RS 4
+Display call chains using type, min percent threshold, optional print limit and order\&. type can be either:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+flat: single column, linear exposure of call chains\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+graph: use a graph tree, displaying absolute overhead rates\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+fractal: like graph, but displays relative rates\&. Each branch of the tree is considered as a new profiled object\&.
+
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+order can be either:
+\- callee: callee based call graph\&.
+\- caller: inverted caller based call graph\&.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+Default: fractal,0\&.5,callee\&.
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.RE
+.PP
+\-G, \-\-inverted
+.RS 4
+alias for inverted caller based call graph\&.
+.RE
+.PP
+\-\-pretty=<key>
+.RS 4
+Pretty printing style\&. key: normal, raw
+.RE
+.PP
+\-\-stdio
+.RS 4
+Use the stdio interface\&.
+.RE
+.PP
+\-\-tui
+.RS 4
+Use the TUI interface, that is integrated with annotate and allows zooming into DSOs or threads, among other features\&. Use of \-\-tui requires a tty, if one is not present, as when piping to other commands, the stdio interface is used\&.
+.RE
+.PP
+\-\-gtk
+.RS 4
+Use the GTK2 interface\&.
+.RE
+.PP
+\-k, \-\-vmlinux=<file>
+.RS 4
+vmlinux pathname
+.RE
+.PP
+\-\-kallsyms=<file>
+.RS 4
+kallsyms pathname
+.RE
+.PP
+\-m, \-\-modules
+.RS 4
+Load module symbols\&. WARNING: This should only be used with \-k and a LIVE kernel\&.
+.RE
+.PP
+\-f, \-\-force
+.RS 4
+Don\(cqt complain, do it\&.
+.RE
+.PP
+\-\-symfs=<directory>
+.RS 4
+Look for files with symbols relative to this directory\&.
+.RE
+.PP
+\-C, \-\-cpu
+.RS 4
+Only report samples for the list of CPUs provided\&. Multiple CPUs can be provided as a comma\-separated list with no space: 0,1\&. Ranges of CPUs are specified with \-: 0\-2\&. Default is to report samples on all CPUs\&.
+.RE
+.PP
+\-M, \-\-disassembler\-style=
+.RS 4
+Set disassembler style for objdump\&.
+.RE
+.PP
+\-\-source
+.RS 4
+Interleave source code with assembly code\&. Enabled by default, disable with \-\-no\-source\&.
+.RE
+.PP
+\-\-asm\-raw
+.RS 4
+Show raw instruction encoding of assembly instructions\&.
+.RE
+.PP
+\-\-show\-total\-period
+.RS 4
+Show a column with the sum of periods\&.
+.RE
+.PP
+\-I, \-\-show\-info
+.RS 4
+Display extended information about the perf\&.data file\&. This adds information which may be very large and thus may clutter the display\&. It currently includes: cpu and numa topology of the host system\&.
+.RE
+.PP
+\-b, \-\-branch\-stack
+.RS 4
+Use the addresses of sampled taken branches instead of the instruction address to build the histograms\&. To generate meaningful output, the perf\&.data file must have been obtained using perf record \-b or perf record \-\-branch\-filter xxx where xxx is a branch filter option\&. perf report is able to auto\-detect whether a perf\&.data file contains branch stacks and it will automatically switch to the branch view mode, unless \-\-no\-branch\-stack is used\&.
+.RE
+.PP
+\-\-objdump=<path>
+.RS 4
+Path to objdump binary\&.
+.RE
+.SH "SEE ALSO"
+.sp
+\fBperf-stat\fR(1), \fBperf-annotate\fR(1)

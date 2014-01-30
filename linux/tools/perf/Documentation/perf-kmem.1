@@ -1,0 +1,94 @@
+'\" t
+.\"     Title: perf-kmem
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.77.1 <http://docbook.sf.net/>
+.\"      Date: 03/19/2013
+.\"    Manual: perf Manual
+.\"    Source: perf
+.\"  Language: English
+.\"
+.TH "PERF\-KMEM" "1" "03/19/2013" "perf" "perf Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+perf-kmem \- Tool to trace/measure kernel memory(slab) properties
+.SH "SYNOPSIS"
+.sp
+.nf
+\fIperf kmem\fR {record|stat} [<options>]
+.fi
+.SH "DESCRIPTION"
+.sp
+There are two variants of perf kmem:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\*(Aqperf kmem record <command>\*(Aq to record the kmem events
+of an arbitrary workload\&.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\*(Aqperf kmem stat\*(Aq to report kernel memory statistics\&.
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPTIONS"
+.PP
+\-i <file>, \-\-input=<file>
+.RS 4
+Select the input file (default: perf\&.data unless stdin is a fifo)
+.RE
+.PP
+\-\-caller
+.RS 4
+Show per\-callsite statistics
+.RE
+.PP
+\-\-alloc
+.RS 4
+Show per\-allocation statistics
+.RE
+.PP
+\-s <key[,key2\&...]>, \-\-sort=<key[,key2\&...]>
+.RS 4
+Sort the output (default: frag,hit,bytes)
+.RE
+.PP
+\-l <num>, \-\-line=<num>
+.RS 4
+Print n lines only
+.RE
+.PP
+\-\-raw\-ip
+.RS 4
+Print raw ip instead of symbol
+.RE
+.SH "SEE ALSO"
+.sp
+\fBperf-record\fR(1)

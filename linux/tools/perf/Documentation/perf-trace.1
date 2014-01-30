@@ -1,0 +1,84 @@
+'\" t
+.\"     Title: perf-trace
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.77.1 <http://docbook.sf.net/>
+.\"      Date: 03/19/2013
+.\"    Manual: perf Manual
+.\"    Source: perf
+.\"  Language: English
+.\"
+.TH "PERF\-TRACE" "1" "03/19/2013" "perf" "perf Manual"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+perf-trace \- strace inspired tool
+.SH "SYNOPSIS"
+.sp
+.nf
+\fIperf trace\fR
+.fi
+.SH "DESCRIPTION"
+.sp
+This command will show the events associated with the target, initially syscalls, but other system events like pagefaults, task lifetime events, scheduling events, etc\&.
+.sp
+Initially this is a live mode only tool, but eventually will work with perf\&.data files like the other tools, allowing a detached \fIrecord\fR from analysis phases\&.
+.SH "OPTIONS"
+.PP
+\-\-all\-cpus
+.RS 4
+System\-wide collection from all CPUs\&.
+.RE
+.PP
+\-p, \-\-pid=
+.RS 4
+Record events on existing process ID (comma separated list)\&.
+.RE
+.PP
+\-\-tid=
+.RS 4
+Record events on existing thread ID (comma separated list)\&.
+.RE
+.PP
+\-\-uid=
+.RS 4
+Record events in threads owned by uid\&. Name or number\&.
+.RE
+.PP
+\-\-no\-inherit
+.RS 4
+Child tasks do not inherit counters\&.
+.RE
+.PP
+\-\-mmap\-pages=
+.RS 4
+Number of mmap data pages\&. Must be a power of two\&.
+.RE
+.PP
+\-\-cpu
+.RS 4
+Collect samples only on the list of CPUs provided\&. Multiple CPUs can be provided as a comma\-separated list with no space: 0,1\&. Ranges of CPUs are specified with \-: 0\-2\&. In per\-thread mode with inheritance mode on (default), Events are captured only when the thread executes on the designated CPUs\&. Default is to monitor all CPUs\&.
+.RE
+.sp
+\-\-duration: Show only events that had a duration greater than N\&.M ms\&.
+.sp
+\-\-sched: Accrue thread runtime and provide a summary at the end of the session\&.
+.SH "SEE ALSO"
+.sp
+\fBperf-record\fR(1), \fBperf-script\fR(1)

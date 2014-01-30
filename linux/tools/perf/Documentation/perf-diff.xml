@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<refentry>
+<refmeta>
+<refentrytitle>perf-diff</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class="source">perf</refmiscinfo>
+<refmiscinfo class="version"></refmiscinfo>
+<refmiscinfo class="manual">perf Manual</refmiscinfo>
+</refmeta>
+<refnamediv>
+  <refname>perf-diff</refname>
+  <refpurpose>Read two perf.data files and display the differential profile</refpurpose>
+</refnamediv>
+<refsynopsisdiv id="_synopsis">
+<blockquote>
+<literallayout><emphasis>perf diff</emphasis> [oldfile] [newfile]</literallayout>
+</blockquote>
+</refsynopsisdiv>
+<refsect1 id="_description">
+<title>DESCRIPTION</title>
+<simpara>This command displays the performance difference amongst two perf.data files
+captured via perf record.</simpara>
+<simpara>If no parameters are passed it will assume perf.data.old and perf.data.</simpara>
+<simpara>The differential profile is displayed only for events matching both
+specified perf.data files.</simpara>
+</refsect1>
+<refsect1 id="_options">
+<title>OPTIONS</title>
+<variablelist>
+<varlistentry>
+<term>
+-M
+</term>
+<term>
+--displacement
+</term>
+<listitem>
+<simpara>
+        Show position displacement relative to baseline.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-D
+</term>
+<term>
+--dump-raw-trace
+</term>
+<listitem>
+<simpara>
+        Dump raw trace in ASCII.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-m
+</term>
+<term>
+--modules
+</term>
+<listitem>
+<simpara>
+        Load module symbols. WARNING: use only with -k and LIVE kernel
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-d
+</term>
+<term>
+--dsos=
+</term>
+<listitem>
+<simpara>
+        Only consider symbols in these dsos. CSV that understands
+        <ulink url="file://filename">file://filename</ulink> entries.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-C
+</term>
+<term>
+--comms=
+</term>
+<listitem>
+<simpara>
+        Only consider symbols in these comms. CSV that understands
+        <ulink url="file://filename">file://filename</ulink> entries.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-S
+</term>
+<term>
+--symbols=
+</term>
+<listitem>
+<simpara>
+        Only consider these symbols. CSV that understands
+        <ulink url="file://filename">file://filename</ulink> entries.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-s
+</term>
+<term>
+--sort=
+</term>
+<listitem>
+<simpara>
+        Sort by key(s): pid, comm, dso, symbol.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-t
+</term>
+<term>
+--field-separator=
+</term>
+<listitem>
+<simpara>
+        Use a special separator character and don&#8217;t pad with spaces, replacing
+        all occurrences of this separator in symbol names (and other output)
+        with a <emphasis>.</emphasis> character, that thus it&#8217;s the only non valid separator.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-v
+</term>
+<term>
+--verbose
+</term>
+<listitem>
+<simpara>
+        Be verbose, for instance, show the raw counts in addition to the
+        diff.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-f
+</term>
+<term>
+--force
+</term>
+<listitem>
+<simpara>
+       Don&#8217;t complain, do it.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--symfs=&lt;directory&gt;
+</term>
+<listitem>
+<simpara>
+        Look for files with symbols relative to this directory.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-b
+</term>
+<term>
+--baseline-only
+</term>
+<listitem>
+<simpara>
+        Show only items with match in baseline.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-c
+</term>
+<term>
+--compute
+</term>
+<listitem>
+<simpara>
+        Differential computation selection - delta,ratio,wdiff (default is delta).
+        If <emphasis>+</emphasis> is specified as a first character, the output is sorted based
+        on the computation results.
+        See COMPARISON METHODS section for more info.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-p
+</term>
+<term>
+--period
+</term>
+<listitem>
+<simpara>
+        Show period values for both compared hist entries.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-F
+</term>
+<term>
+--formula
+</term>
+<listitem>
+<simpara>
+        Show formula for given computation.
+</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 id="_comparison_methods">
+<title>COMPARISON METHODS</title>
+<refsect2 id="_delta">
+<title>delta</title>
+<simpara>If specified the <emphasis>Delta</emphasis> column is displayed with value <emphasis>d</emphasis> computed as:</simpara>
+<literallayout class="monospaced">d = A-&gt;period_percent - B-&gt;period_percent</literallayout>
+<simpara>with:
+  - A/B being matching hist entry from first/second file specified
+    (or perf.data/perf.data.old) respectively.</simpara>
+<itemizedlist>
+<listitem>
+<simpara>
+period_percent being the % of the hist entry period value within
+    single data file
+</simpara>
+</listitem>
+</itemizedlist>
+</refsect2>
+<refsect2 id="_ratio">
+<title>ratio</title>
+<simpara>If specified the <emphasis>Ratio</emphasis> column is displayed with value <emphasis>r</emphasis> computed as:</simpara>
+<literallayout class="monospaced">r = A-&gt;period / B-&gt;period</literallayout>
+<simpara>with:
+  - A/B being matching hist entry from first/second file specified
+    (or perf.data/perf.data.old) respectively.</simpara>
+<itemizedlist>
+<listitem>
+<simpara>
+period being the hist entry period value
+</simpara>
+</listitem>
+</itemizedlist>
+</refsect2>
+<refsect2 id="_wdiff">
+<title>wdiff</title>
+<simpara>If specified the <emphasis>Weighted diff</emphasis> column is displayed with value <emphasis>d</emphasis> computed as:</simpara>
+<literallayout class="monospaced">d = B-&gt;period * WEIGHT-A - A-&gt;period * WEIGHT-B</literallayout>
+<itemizedlist>
+<listitem>
+<simpara>
+A/B being matching hist entry from first/second file specified
+    (or perf.data/perf.data.old) respectively.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+period being the hist entry period value
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+WEIGHT-A/WEIGHT-B being user suplied weights in the the <emphasis>-c</emphasis> option
+    behind <emphasis>:</emphasis> separator like <emphasis>-c wdiff:1,2</emphasis>.
+</simpara>
+</listitem>
+</itemizedlist>
+</refsect2>
+</refsect1>
+<refsect1 id="_see_also">
+<title>SEE ALSO</title>
+<simpara><citerefentry>
+<refentrytitle>perf-record</refentrytitle><manvolnum>1</manvolnum>
+</citerefentry></simpara>
+</refsect1>
+</refentry>

@@ -1,0 +1,2 @@
+arch/x86/kvm/kvm.ko
+arch/x86/kvm/../../../virt/kvm/kvm_main.o arch/x86/kvm/../../../virt/kvm/ioapic.o arch/x86/kvm/../../../virt/kvm/coalesced_mmio.o arch/x86/kvm/../../../virt/kvm/irq_comm.o arch/x86/kvm/../../../virt/kvm/eventfd.o arch/x86/kvm/../../../virt/kvm/assigned-dev.o arch/x86/kvm/../../../virt/kvm/iommu.o arch/x86/kvm/../../../virt/kvm/async_pf.o arch/x86/kvm/x86.o arch/x86/kvm/mmu.o arch/x86/kvm/emulate.o arch/x86/kvm/i8259.o arch/x86/kvm/irq.o arch/x86/kvm/lapic.o arch/x86/kvm/i8254.o arch/x86/kvm/cpuid.o arch/x86/kvm/pmu.o

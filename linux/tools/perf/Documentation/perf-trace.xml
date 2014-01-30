@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<refentry>
+<refmeta>
+<refentrytitle>perf-trace</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class="source">perf</refmiscinfo>
+<refmiscinfo class="version"></refmiscinfo>
+<refmiscinfo class="manual">perf Manual</refmiscinfo>
+</refmeta>
+<refnamediv>
+  <refname>perf-trace</refname>
+  <refpurpose>strace inspired tool</refpurpose>
+</refnamediv>
+<refsynopsisdiv id="_synopsis">
+<blockquote>
+<literallayout><emphasis>perf trace</emphasis></literallayout>
+</blockquote>
+</refsynopsisdiv>
+<refsect1 id="_description">
+<title>DESCRIPTION</title>
+<simpara>This command will show the events associated with the target, initially
+syscalls, but other system events like pagefaults, task lifetime events,
+scheduling events, etc.</simpara>
+<simpara>Initially this is a live mode only tool, but eventually will work with
+perf.data files like the other tools, allowing a detached <emphasis>record</emphasis> from
+analysis phases.</simpara>
+</refsect1>
+<refsect1 id="_options">
+<title>OPTIONS</title>
+<variablelist>
+<varlistentry>
+<term>
+--all-cpus
+</term>
+<listitem>
+<simpara>
+        System-wide collection from all CPUs.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-p
+</term>
+<term>
+--pid=
+</term>
+<listitem>
+<simpara>
+        Record events on existing process ID (comma separated list).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--tid=
+</term>
+<listitem>
+<simpara>
+        Record events on existing thread ID (comma separated list).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--uid=
+</term>
+<listitem>
+<simpara>
+        Record events in threads owned by uid. Name or number.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--no-inherit
+</term>
+<listitem>
+<simpara>
+        Child tasks do not inherit counters.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--mmap-pages=
+</term>
+<listitem>
+<simpara>
+        Number of mmap data pages. Must be a power of two.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--cpu
+</term>
+<listitem>
+<simpara>
+Collect samples only on the list of CPUs provided. Multiple CPUs can be provided as a
+comma-separated list with no space: 0,1. Ranges of CPUs are specified with -: 0-2.
+In per-thread mode with inheritance mode on (default), Events are captured only when
+the thread executes on the designated CPUs. Default is to monitor all CPUs.
+</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+<simpara>--duration:
+        Show only events that had a duration greater than N.M ms.</simpara>
+<simpara>--sched:
+        Accrue thread runtime and provide a summary at the end of the session.</simpara>
+</refsect1>
+<refsect1 id="_see_also">
+<title>SEE ALSO</title>
+<simpara><citerefentry>
+<refentrytitle>perf-record</refentrytitle><manvolnum>1</manvolnum>
+</citerefentry>, <citerefentry>
+<refentrytitle>perf-script</refentrytitle><manvolnum>1</manvolnum>
+</citerefentry></simpara>
+</refsect1>
+</refentry>

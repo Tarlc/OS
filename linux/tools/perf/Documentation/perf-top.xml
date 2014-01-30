@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<refentry>
+<refmeta>
+<refentrytitle>perf-top</refentrytitle>
+<manvolnum>1</manvolnum>
+<refmiscinfo class="source">perf</refmiscinfo>
+<refmiscinfo class="version"></refmiscinfo>
+<refmiscinfo class="manual">perf Manual</refmiscinfo>
+</refmeta>
+<refnamediv>
+  <refname>perf-top</refname>
+  <refpurpose>System profiling tool.</refpurpose>
+</refnamediv>
+<refsynopsisdiv id="_synopsis">
+<blockquote>
+<literallayout><emphasis>perf top</emphasis> [-e &lt;EVENT&gt; | --event=EVENT] [&lt;options&gt;]</literallayout>
+</blockquote>
+</refsynopsisdiv>
+<refsect1 id="_description">
+<title>DESCRIPTION</title>
+<simpara>This command generates and displays a performance counter profile in real time.</simpara>
+</refsect1>
+<refsect1 id="_options">
+<title>OPTIONS</title>
+<variablelist>
+<varlistentry>
+<term>
+-a
+</term>
+<term>
+--all-cpus
+</term>
+<listitem>
+<simpara>
+        System-wide collection.  (default)
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-c &lt;count&gt;
+</term>
+<term>
+--count=&lt;count&gt;
+</term>
+<listitem>
+<simpara>
+        Event period to sample.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-C &lt;cpu-list&gt;
+</term>
+<term>
+--cpu=&lt;cpu&gt;
+</term>
+<listitem>
+<simpara>
+Monitor only on the list of CPUs provided. Multiple CPUs can be provided as a
+comma-separated list with no space: 0,1. Ranges of CPUs are specified with -: 0-2.
+Default is to monitor all CPUS.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-d &lt;seconds&gt;
+</term>
+<term>
+--delay=&lt;seconds&gt;
+</term>
+<listitem>
+<simpara>
+        Number of seconds to delay between refreshes.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-e &lt;event&gt;
+</term>
+<term>
+--event=&lt;event&gt;
+</term>
+<listitem>
+<simpara>
+        Select the PMU event. Selection can be a symbolic event name
+        (use <emphasis>perf list</emphasis> to list all events) or a raw PMU
+        event (eventsel+umask) in the form of rNNN where NNN is a
+        hexadecimal event descriptor.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-E &lt;entries&gt;
+</term>
+<term>
+--entries=&lt;entries&gt;
+</term>
+<listitem>
+<simpara>
+        Display this many functions.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-f &lt;count&gt;
+</term>
+<term>
+--count-filter=&lt;count&gt;
+</term>
+<listitem>
+<simpara>
+        Only display functions with more events than this.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-g
+</term>
+<term>
+--group
+</term>
+<listitem>
+<simpara>
+        Put the counters into a counter group.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-F &lt;freq&gt;
+</term>
+<term>
+--freq=&lt;freq&gt;
+</term>
+<listitem>
+<simpara>
+        Profile at this frequency.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-i
+</term>
+<term>
+--inherit
+</term>
+<listitem>
+<simpara>
+        Child tasks inherit counters, only makes sens with -p option.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-k &lt;path&gt;
+</term>
+<term>
+--vmlinux=&lt;path&gt;
+</term>
+<listitem>
+<simpara>
+        Path to vmlinux.  Required for annotation functionality.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-m &lt;pages&gt;
+</term>
+<term>
+--mmap-pages=&lt;pages&gt;
+</term>
+<listitem>
+<simpara>
+        Number of mmapped data pages.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-p &lt;pid&gt;
+</term>
+<term>
+--pid=&lt;pid&gt;
+</term>
+<listitem>
+<simpara>
+        Profile events on existing Process ID (comma separated list).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-t &lt;tid&gt;
+</term>
+<term>
+--tid=&lt;tid&gt;
+</term>
+<listitem>
+<simpara>
+        Profile events on existing thread ID (comma separated list).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-u
+</term>
+<term>
+--uid=
+</term>
+<listitem>
+<simpara>
+        Record events in threads owned by uid. Name or number.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-r &lt;priority&gt;
+</term>
+<term>
+--realtime=&lt;priority&gt;
+</term>
+<listitem>
+<simpara>
+        Collect data with this RT SCHED_FIFO priority.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-s &lt;symbol&gt;
+</term>
+<term>
+--sym-annotate=&lt;symbol&gt;
+</term>
+<listitem>
+<simpara>
+        Annotate this symbol.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-K
+</term>
+<term>
+--hide_kernel_symbols
+</term>
+<listitem>
+<simpara>
+        Hide kernel symbols.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-U
+</term>
+<term>
+--hide_user_symbols
+</term>
+<listitem>
+<simpara>
+        Hide user symbols.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-D
+</term>
+<term>
+--dump-symtab
+</term>
+<listitem>
+<simpara>
+        Dump the symbol table used for profiling.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-v
+</term>
+<term>
+--verbose
+</term>
+<listitem>
+<simpara>
+        Be more verbose (show counter open errors, etc).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-z
+</term>
+<term>
+--zero
+</term>
+<listitem>
+<simpara>
+        Zero history across display updates.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-s
+</term>
+<term>
+--sort
+</term>
+<listitem>
+<simpara>
+        Sort by key(s): pid, comm, dso, symbol, parent, srcline.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-n
+</term>
+<term>
+--show-nr-samples
+</term>
+<listitem>
+<simpara>
+        Show a column with the number of samples.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--show-total-period
+</term>
+<listitem>
+<simpara>
+        Show a column with the sum of periods.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--dsos
+</term>
+<listitem>
+<simpara>
+        Only consider symbols in these dsos.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--comms
+</term>
+<listitem>
+<simpara>
+        Only consider symbols in these comms.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--symbols
+</term>
+<listitem>
+<simpara>
+        Only consider these symbols.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-M
+</term>
+<term>
+--disassembler-style=
+</term>
+<listitem>
+<simpara>
+Set disassembler style for objdump.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--source
+</term>
+<listitem>
+<simpara>
+        Interleave source code with assembly code. Enabled by default,
+        disable with --no-source.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+--asm-raw
+</term>
+<listitem>
+<simpara>
+        Show raw instruction encoding of assembly instructions.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+-G [type,min,order]
+</term>
+<term>
+--call-graph
+</term>
+<listitem>
+<simpara>
+        Display call chains using type, min percent threshold and order.
+        type can be either:
+</simpara>
+<itemizedlist>
+<listitem>
+<simpara>
+flat: single column, linear exposure of call chains.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+graph: use a graph tree, displaying absolute overhead rates.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+fractal: like graph, but displays relative rates. Each branch of
+                 the tree is considered as a new profiled object.
+</simpara>
+<literallayout class="monospaced">order can be either:
+- callee: callee based call graph.
+- caller: inverted caller based call graph.</literallayout>
+<literallayout class="monospaced">Default: fractal,0.5,callee.</literallayout>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+</variablelist>
+</refsect1>
+<refsect1 id="_interactive_prompting_keys">
+<title>INTERACTIVE PROMPTING KEYS</title>
+<variablelist>
+<varlistentry>
+<term>
+[d]
+</term>
+<listitem>
+<simpara>
+        Display refresh delay.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+[e]
+</term>
+<listitem>
+<simpara>
+        Number of entries to display.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+[E]
+</term>
+<listitem>
+<simpara>
+        Event to display when multiple counters are active.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+[f]
+</term>
+<listitem>
+<simpara>
+        Profile display filter (&gt;= hit count).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+[F]
+</term>
+<listitem>
+<simpara>
+        Annotation display filter (&gt;= % of total).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+[s]
+</term>
+<listitem>
+<simpara>
+        Annotate symbol.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+[S]
+</term>
+<listitem>
+<simpara>
+        Stop annotation, return to full profile display.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+[z]
+</term>
+<listitem>
+<simpara>
+        Toggle event count zeroing across display updates.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+[qQ]
+</term>
+<listitem>
+<simpara>
+        Quit.
+</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+<simpara>Pressing any unmapped key displays a menu, and prompts for input.</simpara>
+</refsect1>
+<refsect1 id="_see_also">
+<title>SEE ALSO</title>
+<simpara><citerefentry>
+<refentrytitle>perf-stat</refentrytitle><manvolnum>1</manvolnum>
+</citerefentry>, <citerefentry>
+<refentrytitle>perf-list</refentrytitle><manvolnum>1</manvolnum>
+</citerefentry></simpara>
+</refsect1>
+</refentry>
