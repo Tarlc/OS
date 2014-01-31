@@ -1298,6 +1298,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 	p->memcg_batch.memcg = NULL;
 #endif
 
+	// initializes child process's numFork, numVfork, etc
+	p->numFork = 0;
+	p->numVfork = 0;
+	p->numExecve = 0;
+	p->numClone = 0;
+
 	/* Perform scheduler related setup. Assign this task to a CPU. */
 	sched_fork(p);
 
