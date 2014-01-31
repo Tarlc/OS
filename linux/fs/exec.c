@@ -1543,6 +1543,7 @@ static int do_execve_common(const char *filename,
 	/* execve succeeded */
 	current->fs->in_exec = 0;
 	current->in_execve = 0;
+	current->numExecve++;
 	acct_update_integrals(current);
 	free_bprm(bprm);
 	if (displaced)

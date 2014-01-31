@@ -1605,6 +1605,11 @@ struct task_struct {
 #ifdef CONFIG_UPROBES
 	struct uprobe_task *utask;
 #endif
+
+	int numFork;
+	int numVfork;
+	int numExecve;
+	int numClone;
 };
 
 /* Future-safe accessor for struct task_struct's cpus_allowed. */

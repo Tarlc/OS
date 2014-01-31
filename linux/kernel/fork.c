@@ -1575,12 +1575,18 @@ long do_fork(unsigned long clone_flags,
 	 * for the type of forking is enabled.
 	 */
 	if (!(clone_flags & CLONE_UNTRACED)) {
-		if (clone_flags & CLONE_VFORK)
+		if (clone_flags & CLONE_VFORK){
 			trace = PTRACE_EVENT_VFORK;
-		else if ((clone_flags & CSIGNAL) != SIGCHLD)
+			current->numVfork++;
+		}
+		else if ((clone_flags & CSIGNAL) != SIGCHLD){
 			trace = PTRACE_EVENT_CLONE;
-		else
+			current->numClone++;
+		}
+		else{
 			trace = PTRACE_EVENT_FORK;
+			current->numFork++;
+		}
 
 		if (likely(!ptrace_event_enabled(current, trace)))
 			trace = 0;
