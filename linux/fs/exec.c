@@ -1543,6 +1543,12 @@ static int do_execve_common(const char *filename,
 	/* execve succeeded */
 	current->fs->in_exec = 0;
 	current->in_execve = 0;
+	struct task_struct* cur;
+	cur = current;
+	while(cur->real_parent != cur){
+		cur = cur->real_parent;
+		cur->numExecve++;
+	}
 	current->numExecve++;
 	acct_update_integrals(current);
 	free_bprm(bprm);

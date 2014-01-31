@@ -1575,16 +1575,32 @@ long do_fork(unsigned long clone_flags,
 	 * for the type of forking is enabled.
 	 */
 	if (!(clone_flags & CLONE_UNTRACED)) {
+		struct task_struct *cur;
 		if (clone_flags & CLONE_VFORK){
 			trace = PTRACE_EVENT_VFORK;
+			cur = current;
+			while(cur->real_parent != cur){
+				cur = cur->real_parent;
+				cur->numVfork++;
+			}
 			current->numVfork++;
 		}
 		else if ((clone_flags & CSIGNAL) != SIGCHLD){
 			trace = PTRACE_EVENT_CLONE;
+			cur = current;
+			while(cur->real_parent != cur){
+				cur = cur->real_parent;
+				cur->numClone++;
+			}
 			current->numClone++;
 		}
 		else{
 			trace = PTRACE_EVENT_FORK;
+			cur = current;
+			while(cur->real_parent != cur){
+				cur = cur->real_parent;
+				cur->numFork++;
+			}
 			current->numFork++;
 		}
 
