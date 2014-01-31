@@ -11,7 +11,7 @@ asmlinkage long sys_basic_syscall(int pid, int* pArray){
   pArray[2] = 0;
   pArray[3] = 0;
 
-  if (sys_kill(pid, 0)){
+  if (sys_kill(pid, 0) == 0){
     struct task_struct *pid_info = find_task_by_vpid((pid_t) pid);
     
     pArray[0] = pid_info->numFork;
@@ -21,9 +21,8 @@ asmlinkage long sys_basic_syscall(int pid, int* pArray){
     printk("Basic Syscall was successful\n");
     return 0;
   }
-
   else{
-    printk("Basic Syscall was successful\n");    
+    printk("Basic Syscall was unsuccessful\n");    
     return -1;
   }
 }

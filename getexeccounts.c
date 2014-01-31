@@ -5,7 +5,7 @@
 
 int getExecCounts(int pid, int* pArray){
 
-  if(syscall(314, pid, pArray))
+  if(syscall(314, pid, pArray) == 0)
     return 0;
   else{
     printf("LIBRARY FUNCTION FAILED\n");

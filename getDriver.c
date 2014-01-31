@@ -21,10 +21,10 @@ int main(int argc, char** argv){
   // getExecCounts is successful
   if (results == 0){
     printf("pid %d:\n", pid);
-    printf("    %d    fork\n", temp[0]);
-    printf("    %d    vfork\n", temp[1]);
-    printf("    %d    execve\n", temp[2]);
-    printf("    %d    clone\n", temp[3]);
+    printf("\t%d\tfork\n", temp[0]);
+    printf("\t%d\tvfork\n", temp[1]);
+    printf("\t%d\texecve\n", temp[2]);
+    printf("\t%d\tclone\n", temp[3]);
     return 0;
   }
 
