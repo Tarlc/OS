@@ -1,9 +1,14 @@
-int getExecCounts(int pid, int* pArray){
-  pArray[0] = 0;
-  pArray[1] = 1;
-  pArray[2] = 2;
-  pArray[3] = 3;
+#include <unistd.h>
+#include <linux/kernel.h>
+#include <stdio.h>
 
-  return 0;
+int getExecCounts(int pid, int* pArray){
+
+  if(syscall(314, pid, pArray))
+    return 0;
+  else{
+    printf("LIBRARY FUNCTION FAILED\n");
+    return -1;
+  }
 }
 
