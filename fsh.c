@@ -49,7 +49,20 @@ void cd(char **tokens, int homeDir){
   int res;
   if (homeDir){
     res = chdir(getenv("HOME"));
-  } else {
+  } else if(*tokens[1]=='~'){
+    res = chdir(getenv("HOME"));
+    char *cur;
+    cur = tokens[1];
+    if (*(cur+1) != '/'){
+      return;
+    }
+    
+    while(*(cur+1) != '\0'){
+      *cur = *(cur+2);
+      cur++;
+    }
+    res = chdir(tokens[1]);
+  } else{
     res = chdir(tokens[1]);
   }
   if (res != 0)
