@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <linux/kernel.h>
 #include <stdio.h>
+#include <linux/sched.h>
 
 int getExecCounts(int pid, int* pArray){
 

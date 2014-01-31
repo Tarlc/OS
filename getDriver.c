@@ -13,6 +13,8 @@ int main(int argc, char** argv){
   }
   
   int temp[4];
+  for (int i = 0; i < 4; i++)
+    temp[i] = 0;
   int pid = atoi(argv[1]);
   int results = getExecCounts(pid, temp);
 
