@@ -22,6 +22,7 @@ int tokenize(char *line, char ***tokens){
     tokenNum++;
     token = strtok(NULL, " \t");
   }
+  newtokens[tokenNum] = NULL;
   *tokens = newtokens;
   return tokenNum;
 }
