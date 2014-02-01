@@ -1,0 +1,26 @@
+linux/kernel/Makefile
+
+We added our system call to the makefile so it would compile and link with all the kernel header files
+
+linux/include/linux/sched.h
+
+declared four ints in the task_struct representing the number of times the process and all of its descendants have called fork/vfork/clone/execve because we needed to keep track of the information for our system call
+
+linux/include/linux/init_task.h
+
+Initialized the counters to be zero and -1 for execve because when the task_struct is first initialized a process will not have called fork, vfork, or clone, and the execve counter needed to be -1 because exec call is executed when a process is started.
+
+linux/kernel/fork.c
+
+Fork, vfork, and clone increment a counter in the task_struct for the process and the parent processes because we needed to increment the counters when the relevant calls were made.
+Initialized child processes' counters so they didn't copy the parent information, this was necessary because we didn't want to copy the parent information.
+
+linux/fs/exec.c
+
+increments the execve counter for the current process and all parent processes when the current process calls execve because we needed to increment the counters when the relevant calls were made.
+
+linux/include/linux/syscalls.h
+linux/arch/x86/syscalls/syscall_32.tbl
+linux/arch/x86/syscalls/syscall_64.tbl
+
+Defines our system call so it can be used in the kernel. We needed to define our system call so it could be used.
