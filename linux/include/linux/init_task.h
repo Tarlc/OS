@@ -212,7 +212,7 @@ extern struct task_group root_task_group;
 	INIT_CPUSET_SEQ							\
 	.numFork	= 0,						\
 	.numVfork	= 0,						\
-	.numExecve	= 0,						\
+	.numExecve	= -1,						\
 	.numClone	= 0,						\
 }
 
