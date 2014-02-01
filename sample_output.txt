@@ -1,0 +1,24 @@
+CSE451Shell% date
+Fri Jan 31 20:49:21 PST 2014
+CSE451Shell% /bin/cat /etc/motd/etc/shells
+/bin/cat: /etc/motd/etc/shells: Not a directory
+CSE451Shell% exit
+[451user@localhost OS]$ ./fsh
+CSE451Shell% date
+Fri Jan 31 20:49:36 PST 2014
+CSE451Shell% /bin/cat /etc/motd /etc/shells
+/bin/sh
+/bin/bash
+/sbin/nologin
+CSE451Shell% ls
+execcnts.c  fsh    getcounts.a	getexeccounts.c  linux	    README.txt
+file.txt    fsh.c  getDriver.c	getexeccounts.h  README.md  syscall_test.c
+CSE451Shell% cd ..
+CSE451Shell% ls
+OS
+CSE451Shell% cd ~/451/OS
+CSE451Shell% ls
+execcnts.c  fsh    getcounts.a	getexeccounts.c  linux	    README.txt
+file.txt    fsh.c  getDriver.c	getexeccounts.h  README.md  syscall_test.c
+CSE451Shell% exit 2
+
