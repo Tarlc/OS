@@ -26,15 +26,14 @@ int main(int argc, char **argv){
     }
   }
 
-  /*
+
   for (int i = 0; i < 5; i++){
     pid_t pid = vfork();
     if (pid == 0){
       //child
       printf("hello2\n");
       // only run execvp once for the 4 forks
-      if (i == 0)
-	res = execvp("date", temp);
+      res = execvp("date", temp);
       if (res == -1){
 	printf("Error: %s not found\n", "date");
 	exit(-1);
@@ -45,28 +44,6 @@ int main(int argc, char **argv){
     }
   }
 
-  for (int i = 0; i < 6; i++){
-    pid_t pid = clone();
-    if (pid == 0){
-      //child
-      printf("hello3\n");
-      // only run execvp once for the 4 forks
-      if (i == 0){
-	res = execvp("date", temp);
-	if (res == -1){
-	  printf("Error: %s not found\n","date");
-	  exit(-1);
-	}
-      }
-      else
-	exit(0);
-
-    } else {
-      //parent                                                                        
-      wait(&res);
-    }
-  }
-  */
   // infinite loop to keep process running
   while (1) {}
 
