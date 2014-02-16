@@ -324,12 +324,11 @@ void sthread_user_yield(void) {
 struct _sthread_mutex {
   /* Fill in mutex data structure */
   int lock;
-  sthread_t holder;
   sthread_queue_t waiting_threads;
 };
 
 sthread_mutex_t sthread_user_mutex_init() {
-  sthread_mutex_t ret = (sthread_mutex_t)malloc(sizeof(_sthread_mutex));
+  sthread_mutex_t ret = (sthread_mutex_t)malloc(sizeof(sthread_mutex_t));
   ret->lock = 0;
   ret->waiting_threads = sthread_new_queue();
   return ret;
@@ -341,35 +340,57 @@ void sthread_user_mutex_free(sthread_mutex_t lock) {
 }
 
 void sthread_user_mutex_lock(sthread_mutex_t lock) {
-  if (lock == 0){
-    lock->holder = active_thread;
-    lock = 1;
+  
+  if (lock->lock == 0){
+    lock->lock = 1;
   }
   else {
-    while (lock == 1
-    
-    
+    sthread_t temp = active_thread;
+    sthread_enqueue(lock->waiting_threads, temp);
+    active_thread = sthread_dequeue(thread_queue);
+    sthread_switch(temp->saved_ctx, active_thread->saved_ctx);
+  }    
 }
 
 void sthread_user_mutex_unlock(sthread_mutex_t lock) {
+  // no threads waiting for the lock, sets lock to unlocked
   if (sthread_queue_is_empty(lock->waiting_threads))
     lock->lock = 0;
-  else
-    lock->holder = sthread_dequeue(lock->waiting_threads);
+  // thread(s) waiting for the lock, pulls one thread from
+  // waiting queue to ready queue implicitly passing the lock
+  else{
+    sthread_t temp = sthread_dequeue(lock->waiting_threads);
+    sthread_enqueue(thread_queue, temp);
+  }
 }
 
-
+/*
+typedef struct _thread_and_lock {
+  sthread_t thread;
+  sthread_mutex_t lock;
+} *thread_and_lock; 
+*/
 struct _sthread_cond {
   /* Fill in condition variable structure */
   sthread_queue_t waiting_threads;
 };
 
+
+//*****************************************************************
+// NOTE condition variables don't seem to be working even though the
+// test passes. Could be a problem with join/part 1 or it could be
+// a problem with the condition variables themselves
+//*****************************************************************
+
+
+
 sthread_cond_t sthread_user_cond_init(void) {
-  sthread_cond_t ret = (sthread_cond_t)malloc(sizeof(_sthread_cond));
+  sthread_cond_t ret = (sthread_cond_t)malloc(sizeof(sthread_cond_t));
   ret->waiting_threads = sthread_new_queue();
+  return ret; 
 }
 
-void sthread_user_cond_free(sthread_cond_t cond) {\
+void sthread_user_cond_free(sthread_cond_t cond) {
   sthread_free_queue(cond->waiting_threads);
   free(cond);  
 }
@@ -392,6 +413,10 @@ void sthread_user_cond_broadcast(sthread_cond_t cond) {
 
 void sthread_user_cond_wait(sthread_cond_t cond,
                             sthread_mutex_t lock) {
-
-
+  sthread_user_mutex_unlock(lock);
+  sthread_t temp = active_thread;
+  active_thread = sthread_dequeue(thread_queue);
+  sthread_enqueue(cond->waiting_threads, temp);
+  sthread_switch(temp->saved_ctx, active_thread->saved_ctx);
+  sthread_user_mutex_lock(lock);
 }
