@@ -32,7 +32,7 @@ struct _sthread {
 sthread_t active_thread;
 sthread_queue_t thread_queue;
 sthread_queue_t dead_thread_queue;
-sthread_t dead_thread;
+//sthread_t dead_thread;
 int initted = 0;
 
 
@@ -46,7 +46,7 @@ void sthread_user_init(void) {
   
   thread_queue = sthread_new_queue();
   dead_thread_queue = sthread_new_queue();
-  dead_thread = NULL; 
+  //  dead_thread = NULL; 
   
   
   sthread_t main_thread = malloc(sizeof(struct _sthread));
@@ -65,9 +65,9 @@ void sthread_user_init(void) {
 
 void runner(void) {
   
-  sthread_start_func_t func = active_thread->start_routine_ptr;
-  sthread_exit((func)(active_thread->args));
-  exit(0);
+  void* ret = active_thread->start_routine_ptr(active_thread->args);
+  sthread_user_exit(ret);
+  // exit(0);
   
   
   
@@ -86,9 +86,14 @@ void runner(void) {
 
 
 // Free's all of the threads on the dead_thread_queue
-void free_dead_threads(void){
+void free_dead_threads(){
   while (!sthread_queue_is_empty(dead_thread_queue)){
     sthread_t temp = sthread_dequeue(dead_thread_queue);
+    if (!sthread_queue_is_empty(temp->join_queue)){
+      printf("ERROR freeing thread with threads waiting for it\n");
+      exit(-1);
+    }
+    sthread_free_queue(temp->join_queue);
     sthread_free_ctx(temp->saved_ctx);
     free(temp);
   }
@@ -109,7 +114,7 @@ sthread_t sthread_user_create(sthread_start_func_t start_routine, void *arg,
     return NULL;
   }
   
-  sthread_t new = malloc(sizeof(sthread_t));
+  sthread_t new = malloc(sizeof(struct _sthread));
   new->args = arg;
   new->joinable = joinable;
   new->start_routine_ptr = start_routine;
@@ -126,146 +131,26 @@ void sthread_user_exit(void *ret) {
     printf("[sthread_user_exit] Library is not initialized.\n");
     exit(-1);
   }
-  /*
-    if(dead_thread_queue == NULL){
-    dead_thread_queue = sthread_new_queue();
-    }
-    
-    if(dead_thread != NULL){
-    if(sthread_queue_is_empty(dead_thread_queue)){
-    sthread_enqueue(dead_thread_queue,dead_thread);
-    } else{
-    dead_thread_queue = sthread_new_queue();
-    sthread_enqueue(dead_thread_queue,dead_thread);
-    }
-    dead_thread = NULL;
-    }
-    
-    if(sthread_queue_is_empty(thread_queue)){
-    sthread_free_queue(thread_queue);
-    exit(0);
-    } else{
-    while(!sthread_queue_is_empty(active_thread->join_queue)){
-    sthread_enqueue(thread_queue,sthread_dequeue(active_thread->join_queue));
-    }
-    sthread_free_queue(active_thread->join_queue);
-    dead_thread = active_thread;
-    if(!sthread_queue_is_empty(dead_thread_queue)){
-    sthread_enqueue(dead_thread_queue,dead_thread);
-    }else{
-    dead_thread_queue = sthread_new_queue();
-    sthread_enqueue(dead_thread_queue,dead_thread);
-    }
-    active_thread = sthread_dequeue(thread_queue);
-    sthread_switch(dead_thread->saved_ctx,active_thread->saved_ctx);
-    }*/
-  
-  /*if (dead_thread != NULL) {
-  // free the memory of the last dead thread
-  sthread_free_ctx(dead_thread->saved_ctx);
-  free(dead_thread);
-  dead_thread = NULL;
-  }
-  
-  if(sthread_queue_is_empty(thread_queue)){
-  // the last thread terminated, exit the process
-  sthread_free_queue(thread_queue);
-  exit(0);
-  } else {
-  // switch to the next executable thread
-  dead_thread = active_thread;
-  active_thread = sthread_dequeue(thread_queue);
-  sthread_switch(dead_thread->saved_ctx, active_thread->saved_ctx);
-  }*/
-  
-  // if no threads are waiting on this thread, simply kill it
 
+  free_dead_threads();
 
-
-  //---------------------------------------------------------------
-
-
-
-  // THIS SHOULD WORK, BUT FREEING active_thread BEFORE CONTEXT SWITCH FAILS
-    
-  // FREEING THREAD
-
-  sthread_t dead_thread = active_thread;
-
-  // there aren't any threads waiting for this thread to terminate
-
-  // there are threads waiting on this thread to terminate
-  while (!sthread_queue_is_empty(active_thread->join_queue)){
-    sthread_t temp = sthread_dequeue(active_thread->join_queue);
-
-    // add ret to the thread's waiting on this thread
-    temp->return_value = ret;
-
-    sthread_enqueue(thread_queue, temp);
-  }
-
-  /*
-  // add this thread to the dead_thread_queue
+  // put the dead thread on dead_thread_queue to be freed later
   sthread_enqueue(dead_thread_queue, active_thread);
-  */
-  // SWITCHING TO NEW THREAD
 
-  if(!sthread_queue_is_empty(thread_queue)){      
-    active_thread = sthread_dequeue(thread_queue);
-    sthread_switch(dead_thread->saved_ctx, active_thread->saved_ctx); 
-  }
-  else {
-    sthread_free_queue(thread_queue);
-    while(!sthread_queue_is_empty(dead_thread_queue)){
-      sthread_t temp = sthread_dequeue(dead_thread_queue);
-      sthread_free_ctx(temp->saved_ctx);
-      free(temp);
-    }
-    sthread_free_queue(thread_queue);
-    //    exit(0);
-  }
-
-}
-  
-
-
-  //-------------------------------------------------------------------------
-  /*
-// otherwise make all waiting threads ready and put current thread
-// on dead_threads queue
-  
-//  free_dead_threads();
-
-
-  if (dead_thread != NULL) {
-    // free the memory of the last dead thread 
-    sthread_free_ctx(dead_thread->saved_ctx);
-    free(dead_thread);
-    dead_thread = NULL;
-  }
-
-  // if the dead_thread had any thread's waiting for it, put them
-  // on the ready queue
-  while (!sthread_queue_is_empty(active_thread->join_queue)){
+  // put thread's waiting for this thread on ready queue
+  while(!sthread_queue_is_empty(active_thread->join_queue)){
     sthread_t temp = sthread_dequeue(active_thread->join_queue);
+    temp->return_value = ret;
     sthread_enqueue(thread_queue, temp);
   }
 
-
-  if(sthread_queue_is_empty(thread_queue)){
-    // the last thread terminated, exit the process
-    sthread_free_queue(thread_queue);
-    exit(0);
-  } else {
-    // switch to the next executable thread
-    dead_thread = active_thread;
-    //    sthread_enqueue(dead_thread_queue, dead_thread);
-    active_thread = sthread_dequeue(thread_queue);
-    sthread_switch(dead_thread->saved_ctx, active_thread->saved_ctx);
-    }
+  // switch to another thread to run
+  sthread_t dead_thread = active_thread;
+  active_thread = sthread_dequeue(thread_queue);
+  sthread_switch(dead_thread->saved_ctx,active_thread->saved_ctx);
 }
 
-*/
+
 void* sthread_user_join(sthread_t t) {
   //wait for the specified thread to exit
   if (!initted) {
@@ -288,9 +173,10 @@ void* sthread_user_join(sthread_t t) {
     return active_thread->return_value;
   } else {
     printf("not joinable\n");
+    return NULL;
   }
   //return t->return_value;
-  //return NULL;
+  //  return NULL;
 }
 
 
@@ -328,15 +214,21 @@ struct _sthread_mutex {
 };
 
 sthread_mutex_t sthread_user_mutex_init() {
-  sthread_mutex_t ret = (sthread_mutex_t)malloc(sizeof(sthread_mutex_t));
+  sthread_mutex_t ret = (sthread_mutex_t)malloc(sizeof(struct _sthread_mutex));
   ret->lock = 0;
   ret->waiting_threads = sthread_new_queue();
   return ret;
 }
 
 void sthread_user_mutex_free(sthread_mutex_t lock) {
-  sthread_free_queue(lock->waiting_threads);
-  free(lock);
+  if (!sthread_queue_is_empty(lock->waiting_threads)){
+    printf("Threads are still waiting on the mutex, so it can't be freed\n");
+    return;
+  }
+  else {
+    sthread_free_queue(lock->waiting_threads);
+    free(lock);
+  }
 }
 
 void sthread_user_mutex_lock(sthread_mutex_t lock) {
@@ -385,7 +277,7 @@ struct _sthread_cond {
 
 
 sthread_cond_t sthread_user_cond_init(void) {
-  sthread_cond_t ret = (sthread_cond_t)malloc(sizeof(sthread_cond_t));
+  sthread_cond_t ret = (sthread_cond_t)malloc(sizeof(struct _sthread_cond));
   ret->waiting_threads = sthread_new_queue();
   return ret; 
 }
