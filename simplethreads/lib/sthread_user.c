@@ -121,10 +121,9 @@ void sthread_user_exit(void *ret) {
       sthread_user_join(temp);
     }
 
-    // free the return_value_queue TCB's
+    // free the return_value_queue nodes
     while(!sthread_queue_is_empty(return_value_queue)){
-      sthread_t temp = sthread_dequeue(return_value_queue);
-      free(temp);
+      sthread_dequeue(return_value_queue);
     }
 
     // free overhead queue's

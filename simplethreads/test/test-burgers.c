@@ -32,6 +32,7 @@ void *cook(void *arg) {
   sthread_mutex_unlock(stackLock);
   sthread_cond_broadcast(burgerExists);
   sthread_exit(NULL);
+  return (void *) NULL;
 }
 
 void *student(void *arg) {
@@ -100,9 +101,6 @@ int main(int argc, char **argv) {
   }
   sthread_cond_free(burgerExists);
   sthread_mutex_free(stackLock);
-
-  printf("burgers made: %d\n", curBurgerNum);
-  printf("burgers eaten: %d\n", burgersEaten);
-
+  sthread_exit(0);
   return 0;
 }
