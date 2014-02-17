@@ -57,6 +57,7 @@ void sthread_user_init(void) {
   
   thread_queue = sthread_new_queue();
   dead_thread_queue = sthread_new_queue();
+  return_value_queue = sthread_new_queue();
   //  dead_thread = NULL; 
   
   
