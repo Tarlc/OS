@@ -27,11 +27,13 @@ struct _sthread {
   sthread_ctx_t *saved_ctx;
   sthread_queue_t join_queue;
   void* return_value;
+  int is_actually_dead; // -1 is main, 0 is still runnable, 1 is dead
 };
 
 sthread_t active_thread;
 sthread_queue_t thread_queue;
 sthread_queue_t dead_thread_queue;
+sthread_queue_t return_value_queue;
 //sthread_t dead_thread;
 int initted = 0;
 
@@ -63,8 +65,8 @@ void sthread_user_init(void) {
   main_thread->joinable = 0;
   main_thread->args = NULL;
   main_thread->start_routine_ptr = NULL;
-  main_thread->join_queue = sthread_new_queue();
   main_thread->saved_ctx = sthread_new_blank_ctx();
+  main_thread->is_actually_dead = -1; // unique for main thread
   
   // set the main thread as the active thread
   active_thread = main_thread;
@@ -94,6 +96,8 @@ sthread_t sthread_user_create(sthread_start_func_t start_routine, void *arg,
   new->start_routine_ptr = start_routine;
   new->saved_ctx = sthread_new_ctx(runner);
   new->join_queue = sthread_new_queue();
+  new->return_value = NULL;
+  new->is_actually_dead = 0;
   sthread_enqueue(thread_queue,new);
   
   return new;
@@ -108,21 +112,45 @@ void sthread_user_exit(void *ret) {
 
   free_dead_threads();
 
-  // put the dead thread on dead_thread_queue to be freed later
-  sthread_enqueue(dead_thread_queue, active_thread);
+  // exiting from main thread
+  if (active_thread->is_actually_dead == -1){
+    // make sure other thread's finish
+    while (!sthread_queue_is_empty(thread_queue)){
+      sthread_t temp = sthread_dequeue(thread_queue);
+      sthread_user_join(temp);
+    }
 
-  // put thread's waiting for this thread on ready queue
-  while(!sthread_queue_is_empty(active_thread->join_queue)){
-    sthread_t temp = sthread_dequeue(active_thread->join_queue);
-    //    temp->return_value = ret;
-    sthread_enqueue(thread_queue, temp);
+    // free the return_value_queue TCB's
+    while(!sthread_queue_is_empty(return_value_queue)){
+      sthread_t temp = sthread_dequeue(return_value_queue);
+      free(temp);
+    }
+
+    // free overhead queue's
+    sthread_free_queue(thread_queue);
+    sthread_free_queue(dead_thread_queue);
+    sthread_free_queue(return_value_queue);
   }
-
-  // switch to another thread to run
-  /*  sthread_t dead_thread = active_thread;
-  active_thread = sthread_dequeue(thread_queue);
-  sthread_switch(dead_thread->saved_ctx,active_thread->saved_ctx); */
-  context_switch(active_thread);
+  // not main thread
+  else {
+    // put the dead thread on dead_thread_queue to be freed later
+    // and mark the thread as dead/finished
+    sthread_enqueue(dead_thread_queue, active_thread);
+    active_thread->is_actually_dead = 1;
+    
+    // put thread's waiting for this thread on ready queue
+    while(!sthread_queue_is_empty(active_thread->join_queue)){
+      sthread_t temp = sthread_dequeue(active_thread->join_queue);
+      //    temp->return_value = ret;
+      sthread_enqueue(thread_queue, temp);
+    }
+    
+    // switch to another thread to run
+    /*  sthread_t dead_thread = active_thread;
+	active_thread = sthread_dequeue(thread_queue);
+	sthread_switch(dead_thread->saved_ctx,active_thread->saved_ctx); */
+    context_switch(active_thread);
+  }
 }
 
 
@@ -147,13 +175,18 @@ void* sthread_user_join(sthread_t t) {
     active_thread = sthread_dequeue(thread_queue);
     sthread_switch(temp->saved_ctx,active_thread->saved_ctx);
     */
-
-    sthread_enqueue(t->join_queue, active_thread);
-    context_switch(active_thread);
-
-    void* ret = t->return_value;
+    // trying to join on main thread (not ok)
+    if (t->is_actually_dead == -1){
+      printf("ERROR: joining on main thread\n");
+      exit(-1);
+    }
+    // waiting on a thread that is still running
+    if (t->is_actually_dead == 0){ 
+      sthread_enqueue(t->join_queue, active_thread);
+      context_switch(active_thread);
+    }
     //    free_dead_threads();
-    return ret;
+    return t->return_value;
   } else {
     printf("not joinable\n");
     return NULL;
@@ -212,7 +245,8 @@ void free_dead_threads(void){
     }
     sthread_free_queue(temp->join_queue);
     sthread_free_ctx(temp->saved_ctx);
-    free(temp);
+    //    free(temp);
+    sthread_enqueue(return_value_queue, temp); // keep the return value of the dead thread
   }
 }
 
