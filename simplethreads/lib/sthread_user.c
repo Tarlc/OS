@@ -205,13 +205,14 @@ void sthread_user_yield(void) {
   }
 
   free_dead_threads();
-
-  int oldvalue = splx(HIGH);
-
-  sthread_enqueue(thread_queue, active_thread);
-  context_switch(active_thread);
-
-  splx(oldvalue);
+  if (!sthread_queue_is_empty(thread_queue)){
+    int oldvalue = splx(HIGH);
+    
+    sthread_enqueue(thread_queue, active_thread);
+    context_switch(active_thread);
+    
+    splx(oldvalue);
+  }
 }
 
 /* Add any new part 1 functions here */
@@ -232,7 +233,7 @@ void runner(void) {
 
 // Free's all of the threads on the dead_thread_queue
 void free_dead_threads(void){
-  splx(HIGH);
+  int oldvalue = splx(HIGH);
   while (!sthread_queue_is_empty(dead_thread_queue)){
     sthread_t temp = sthread_dequeue(dead_thread_queue);
     if (!sthread_queue_is_empty(temp->join_queue)){
@@ -244,7 +245,7 @@ void free_dead_threads(void){
     //    free(temp);
     sthread_enqueue(return_value_queue, temp); // keep the return value of the dead thread
   }
-  splx(LOW);
+  splx(oldvalue);
 }
 
 
@@ -304,9 +305,12 @@ void sthread_user_mutex_lock(sthread_mutex_t lock) {
   if (atomic_test_and_set(&(lock->lock))){
 
     int oldvalue = splx(HIGH);
+    /*
     sthread_t temp = active_thread;
     active_thread = sthread_dequeue(thread_queue);
     sthread_switch(temp->saved_ctx, active_thread->saved_ctx);
+    */
+    context_switch(active_thread);
     splx(oldvalue);
   }    
 }
@@ -373,10 +377,14 @@ void sthread_user_cond_wait(sthread_cond_t cond,
                             sthread_mutex_t lock) {
   int oldvalue = splx(HIGH);
   sthread_user_mutex_unlock(lock);
+  /*
   sthread_t temp = active_thread;
   active_thread = sthread_dequeue(thread_queue);
   sthread_enqueue(cond->waiting_threads, temp);
   sthread_switch(temp->saved_ctx, active_thread->saved_ctx);
+  */
+  sthread_enqueue(cond->waiting_threads, active_thread);
+  context_switch(active_thread);
   sthread_user_mutex_lock(lock);
   splx(oldvalue);
 }
