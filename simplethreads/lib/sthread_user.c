@@ -19,6 +19,7 @@
 #include <sthread_user.h>
 #include <sthread_ctx.h>
 #include <sthread_user.h>
+#include <sthread_preempt.h>
 
 struct _sthread {
   void* args;
@@ -49,6 +50,8 @@ void free_dead_threads(void);
 // wrapper function for starting/exiting threads
 void runner(void);
 
+void sthread_user_dispatcher(void);
+
 // takes the old thread and context switches to a new thread
 void context_switch(sthread_t old);
 
@@ -73,6 +76,8 @@ void sthread_user_init(void) {
   active_thread = main_thread;
   
   initted = 1;
+
+  sthread_preemption_init(sthread_user_dispatcher,50);
 }
 
 
@@ -99,8 +104,9 @@ sthread_t sthread_user_create(sthread_start_func_t start_routine, void *arg,
   new->join_queue = sthread_new_queue();
   new->return_value = NULL;
   new->is_actually_dead = 0;
+  splx(HIGH);
   sthread_enqueue(thread_queue,new);
-  
+  splx(LOW);
   return new;
 }
 
@@ -112,6 +118,8 @@ void sthread_user_exit(void *ret) {
   }
 
   free_dead_threads();
+
+  splx(HIGH);
 
   // exiting from main thread
   if (active_thread->is_actually_dead == -1){
@@ -151,6 +159,7 @@ void sthread_user_exit(void *ret) {
 	sthread_switch(dead_thread->saved_ctx,active_thread->saved_ctx); */
     context_switch(active_thread);
   }
+  splx(LOW);
 }
 
 
@@ -163,18 +172,12 @@ void* sthread_user_join(sthread_t t) {
 
   free_dead_threads();
   
+  splx(HIGH);
   if(t->joinable) {
     //sanity check
     if(t->join_queue == NULL){
       t->join_queue = sthread_new_queue();
     }
-
-    /*
-    sthread_t temp = active_thread;
-    sthread_enqueue(t->join_queue, active_thread);
-    active_thread = sthread_dequeue(thread_queue);
-    sthread_switch(temp->saved_ctx,active_thread->saved_ctx);
-    */
     // trying to join on main thread (not ok)
     if (t->is_actually_dead == -1){
       printf("ERROR: joining on main thread\n");
@@ -185,14 +188,13 @@ void* sthread_user_join(sthread_t t) {
       sthread_enqueue(t->join_queue, active_thread);
       context_switch(active_thread);
     }
-    //    free_dead_threads();
+    splx(LOW);
     return t->return_value;
   } else {
     printf("not joinable\n");
+    splx(LOW);
     return NULL;
   }
-  //return t->return_value;
-  //  return NULL;
 }
 
 
@@ -205,19 +207,12 @@ void sthread_user_yield(void) {
 
   free_dead_threads();
 
+  splx(HIGH);
+
   sthread_enqueue(thread_queue, active_thread);
   context_switch(active_thread);
-  /*
-  if(!sthread_queue_is_empty(thread_queue)){
-    sthread_t old_thread = active_thread;
-    sthread_enqueue(thread_queue,active_thread);
-    active_thread = sthread_dequeue(thread_queue);
-    sthread_switch(old_thread->saved_ctx,active_thread->saved_ctx);
-  }
-  // only runnable thread
-  else
-    return;
-  */
+
+  splx(LOW);
 }
 
 /* Add any new part 1 functions here */
@@ -229,6 +224,7 @@ void context_switch(sthread_t old){
 }
 
 void runner(void) {
+  splx(LOW);
   active_thread->return_value = active_thread->start_routine_ptr(active_thread->args);
   sthread_user_exit(NULL);
   // exit(0);  
@@ -237,6 +233,7 @@ void runner(void) {
 
 // Free's all of the threads on the dead_thread_queue
 void free_dead_threads(void){
+  splx(HIGH);
   while (!sthread_queue_is_empty(dead_thread_queue)){
     sthread_t temp = sthread_dequeue(dead_thread_queue);
     if (!sthread_queue_is_empty(temp->join_queue)){
@@ -248,6 +245,15 @@ void free_dead_threads(void){
     //    free(temp);
     sthread_enqueue(return_value_queue, temp); // keep the return value of the dead thread
   }
+  splx(LOW);
+}
+
+
+
+
+void sthread_user_dispatcher(void)
+{
+  sthread_user_yield();
 }
 
 
@@ -257,7 +263,7 @@ void free_dead_threads(void){
 
 struct _sthread_mutex {
   /* Fill in mutex data structure */
-  int lock;
+  lock_t lock;
   sthread_queue_t waiting_threads;
 };
 
@@ -280,20 +286,33 @@ void sthread_user_mutex_free(sthread_mutex_t lock) {
 }
 
 void sthread_user_mutex_lock(sthread_mutex_t lock) {
+
+  while(atomic_test_and_set(&(lock->lock))) {}
   
   if (lock->lock == 0){
     lock->lock = 1;
+
+    atomic_clear(&(lock->lock));
   }
   else {
+    sthread_enqueue(lock->waiting_threads, active_thread);
+
+    atomic_clear(&(lock->lock));
+
+
+    splx(HIGH);
     sthread_t temp = active_thread;
-    sthread_enqueue(lock->waiting_threads, temp);
     active_thread = sthread_dequeue(thread_queue);
     sthread_switch(temp->saved_ctx, active_thread->saved_ctx);
+    splx(LOW);
   }    
 }
 
 void sthread_user_mutex_unlock(sthread_mutex_t lock) {
   // no threads waiting for the lock, sets lock to unlocked
+
+  while(atomic_test_and_set(&(lock->lock))) {}
+
   if (sthread_queue_is_empty(lock->waiting_threads))
     lock->lock = 0;
   // thread(s) waiting for the lock, pulls one thread from
@@ -301,7 +320,11 @@ void sthread_user_mutex_unlock(sthread_mutex_t lock) {
   else{
     sthread_t temp = sthread_dequeue(lock->waiting_threads);
     sthread_enqueue(thread_queue, temp);
+
+    sthread_user_yield();
   }
+
+  atomic_clear(&(lock->lock));
 }
 
 /*
