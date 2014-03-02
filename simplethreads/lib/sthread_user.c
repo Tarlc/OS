@@ -39,7 +39,6 @@ sthread_queue_t return_value_queue;
 int initted = 0;
 
 
-
 /*********************************************************************/
 /* Part 1: Creating and Scheduling Threads                           */
 /*********************************************************************/
@@ -104,9 +103,9 @@ sthread_t sthread_user_create(sthread_start_func_t start_routine, void *arg,
   new->join_queue = sthread_new_queue();
   new->return_value = NULL;
   new->is_actually_dead = 0;
-  splx(HIGH);
+  int old_interupt_value = splx(HIGH);
   sthread_enqueue(thread_queue,new);
-  splx(LOW);
+  splx(old_interupt_value);
   return new;
 }
 
@@ -119,7 +118,7 @@ void sthread_user_exit(void *ret) {
 
   free_dead_threads();
 
-  splx(HIGH);
+  int oldvalue = splx(HIGH);
 
   // exiting from main thread
   if (active_thread->is_actually_dead == -1){
@@ -159,7 +158,7 @@ void sthread_user_exit(void *ret) {
 	sthread_switch(dead_thread->saved_ctx,active_thread->saved_ctx); */
     context_switch(active_thread);
   }
-  splx(LOW);
+  splx(oldvalue);
 }
 
 
@@ -172,7 +171,7 @@ void* sthread_user_join(sthread_t t) {
 
   free_dead_threads();
   
-  splx(HIGH);
+  int oldvalue = splx(HIGH);
   if(t->joinable) {
     //sanity check
     if(t->join_queue == NULL){
@@ -188,11 +187,11 @@ void* sthread_user_join(sthread_t t) {
       sthread_enqueue(t->join_queue, active_thread);
       context_switch(active_thread);
     }
-    splx(LOW);
+    splx(oldvalue);
     return t->return_value;
   } else {
     printf("not joinable\n");
-    splx(LOW);
+    splx(oldvalue);
     return NULL;
   }
 }
@@ -207,12 +206,12 @@ void sthread_user_yield(void) {
 
   free_dead_threads();
 
-  splx(HIGH);
+  int oldvalue = splx(HIGH);
 
   sthread_enqueue(thread_queue, active_thread);
   context_switch(active_thread);
 
-  splx(LOW);
+  splx(oldvalue);
 }
 
 /* Add any new part 1 functions here */
@@ -287,6 +286,7 @@ void sthread_user_mutex_free(sthread_mutex_t lock) {
 
 void sthread_user_mutex_lock(sthread_mutex_t lock) {
 
+  /*
   while(atomic_test_and_set(&(lock->lock))) {}
   
   if (lock->lock == 0){
@@ -298,41 +298,41 @@ void sthread_user_mutex_lock(sthread_mutex_t lock) {
     sthread_enqueue(lock->waiting_threads, active_thread);
 
     atomic_clear(&(lock->lock));
+  */
 
+  // fails to acquire the lock
+  if (atomic_test_and_set(&(lock->lock))){
 
-    splx(HIGH);
+    int oldvalue = splx(HIGH);
     sthread_t temp = active_thread;
     active_thread = sthread_dequeue(thread_queue);
     sthread_switch(temp->saved_ctx, active_thread->saved_ctx);
-    splx(LOW);
+    splx(oldvalue);
   }    
 }
 
 void sthread_user_mutex_unlock(sthread_mutex_t lock) {
   // no threads waiting for the lock, sets lock to unlocked
 
-  while(atomic_test_and_set(&(lock->lock))) {}
+  //  while(atomic_test_and_set(&(lock->lock))) {}
 
   if (sthread_queue_is_empty(lock->waiting_threads))
-    lock->lock = 0;
+    atomic_clear(&(lock->lock));
+    //lock->lock = 0;
   // thread(s) waiting for the lock, pulls one thread from
   // waiting queue to ready queue implicitly passing the lock
   else{
+    int oldvalue = splx(HIGH);
     sthread_t temp = sthread_dequeue(lock->waiting_threads);
     sthread_enqueue(thread_queue, temp);
+    splx(oldvalue);
 
     sthread_user_yield();
   }
 
-  atomic_clear(&(lock->lock));
+  //  atomic_clear(&(lock->lock));
 }
 
-/*
-typedef struct _thread_and_lock {
-  sthread_t thread;
-  sthread_mutex_t lock;
-} *thread_and_lock; 
-*/
 struct _sthread_cond {
   /* Fill in condition variable structure */
   sthread_queue_t waiting_threads;
@@ -350,27 +350,33 @@ void sthread_user_cond_free(sthread_cond_t cond) {
 }
 
 void sthread_user_cond_signal(sthread_cond_t cond) {
+  int oldvalue = splx(HIGH);
   if (!sthread_queue_is_empty(cond->waiting_threads)){
     sthread_t temp = sthread_dequeue(cond->waiting_threads);
     sthread_enqueue(thread_queue, temp);
   }
+  splx(oldvalue);
 }
 
 void sthread_user_cond_broadcast(sthread_cond_t cond) {
+  int oldvalue = splx(HIGH);
   while (!sthread_queue_is_empty(cond->waiting_threads)){
     sthread_t temp = sthread_dequeue(cond->waiting_threads);
     sthread_enqueue(thread_queue, temp);
   }
+  splx(oldvalue);
 }
 
 
 
 void sthread_user_cond_wait(sthread_cond_t cond,
                             sthread_mutex_t lock) {
+  int oldvalue = splx(HIGH);
   sthread_user_mutex_unlock(lock);
   sthread_t temp = active_thread;
   active_thread = sthread_dequeue(thread_queue);
   sthread_enqueue(cond->waiting_threads, temp);
   sthread_switch(temp->saved_ctx, active_thread->saved_ctx);
   sthread_user_mutex_lock(lock);
+  splx(oldvalue);
 }
