@@ -68,8 +68,12 @@ static void web_send_error_doc(FILE *stream, status_t status);
 
 // condition variable to signal the threads when a request comes in
 static sthread_mutex_t requests_lock;
-static sthread_cond_t request_ready;
-queue* requests;
+static sthread_cond_t requests_empty;
+static sthread_cond_t requests_full;
+
+// queue and max size of queue to hold requests
+static const int MAX_REQUESTS = 64;
+queue requests;
 
 /*
 // struct to pass arguments to the worker threads
@@ -82,23 +86,24 @@ typedef struct _arguments{
 /* function for the threads to run. It takes a struct with the docroot
  * and a pointer to next_conn and runs handle request when signaled */
 void *worker(void *args){
-  int* next_conn;
+  int next_conn;
   //infinite loop, ready to handle requests when signaled
   while(1){
     sthread_mutex_lock(requests_lock);
     // wait for a request to be ready to be processed
     while(queue_is_empty(requests)){
-      sthread_cond_wait(request_ready, requests_lock);
+      sthread_cond_wait(requests_empty, requests_lock);
     }
 
     // sanity check
-    if (!queue_remove(requests, next_conn)){
+    if (!dequeue(requests, &next_conn)){
       printf("Error line 95\n");
     }
 
+    sthread_cond_signal(requests_full);
     sthread_mutex_unlock(requests_lock);
     
-    web_handle_connection(*next_conn, (char*)args);
+    web_handle_connection(next_conn, (char*)args);
   }
 }
 
@@ -112,7 +117,7 @@ void web_runloop(const char *host, int port, const char *docroot, int num_thread
   //  queue* thread_queue = queue_create();
 
   // create a queue to hold the incoming requests
-  requests = queue_create();
+  requests = create_queue(MAX_REQUESTS);
   
   /*
   // create args struct to pass arguments to the worker thread's functions
@@ -121,6 +126,11 @@ void web_runloop(const char *host, int port, const char *docroot, int num_thread
   args->requests = requests;
   */
 
+  // initialize the mutex and condition variable
+  requests_empty = sthread_cond_init();
+  requests_full = sthread_cond_init();
+  requests_lock = sthread_mutex_init();
+
   // create the worker threads
   sthread_t threads[num_threads];
   int i;  
@@ -128,18 +138,18 @@ void web_runloop(const char *host, int port, const char *docroot, int num_thread
     threads[i] = sthread_create(worker, (void*)docroot, 0);
   }
 
-  // initialize the mutex and condition variable
-  request_ready = sthread_cond_init();
-  requests_lock = sthread_mutex_init();
-
   listen_socket = web_setup_socket(port);
 
   while ((next_conn = web_next_connection(listen_socket)) >= 0) {
     //    web_handle_connection(next_conn, docroot);
     sthread_mutex_lock(requests_lock);
-    queue_append(requests, next_conn); // possible error since next_conn isn't a void*
+    while(queue_is_full(requests))
+      sthread_cond_wait(requests_full, requests_lock);
+
+    if (!enqueue(requests, next_conn))
+      printf("ERROR: line 147\n");
+    sthread_cond_signal(requests_empty);
     sthread_mutex_unlock(requests_lock);
-    sthread_cond_signal(request_ready);
   }
 
   // free everything
@@ -148,7 +158,8 @@ void web_runloop(const char *host, int port, const char *docroot, int num_thread
   }
 
   sthread_mutex_free(requests_lock);
-  sthread_cond_free(request_ready);
+  sthread_cond_free(requests_empty);
+  sthread_cond_free(requests_full);
 
   free(requests);
 
