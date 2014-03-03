@@ -32,6 +32,15 @@ static const char *web_getdocroot(void);
 static void web_printurl(const char *host, int port);
 
 int main(int argc, char **argv) {
+
+  // check that we received one argument
+  if (argc != 2){
+    printf("USAGE: input the number of worker threads you wish to have");
+    exit(0);
+  }
+
+  int num_threads = atoi(argv[1]);
+
   int port;
   const char *host;
   const char *docroot;
@@ -47,7 +56,7 @@ int main(int argc, char **argv) {
   web_printurl(host, port);
 
   /* Handle requests forever */
-  web_runloop(host, port, docroot);
+  web_runloop(host, port, docroot, num_threads);
   return 0;
 }
 

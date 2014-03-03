@@ -17,7 +17,7 @@
 #include <unistd.h>
 
 #include <sthread.h>
-
+#include <web_queue.h>
 #include <sioux_run.h>
 
 
@@ -66,19 +66,91 @@ static status_t web_open_file(const char *filename, FILE **file);
 static void web_send_file(FILE *stream, FILE *file);
 static void web_send_error_doc(FILE *stream, status_t status);
 
+// condition variable to signal the threads when a request comes in
+static sthread_mutex_t requests_lock;
+static sthread_cond_t request_ready;
+queue* requests;
+
+/*
+// struct to pass arguments to the worker threads
+typedef struct _arguments{
+  char *docroot;
+  queue* requests;
+} *arguments;
+*/
+
+/* function for the threads to run. It takes a struct with the docroot
+ * and a pointer to next_conn and runs handle request when signaled */
+void *worker(void *args){
+  int* next_conn;
+  //infinite loop, ready to handle requests when signaled
+  while(1){
+    sthread_mutex_lock(requests_lock);
+    // wait for a request to be ready to be processed
+    while(queue_is_empty(requests)){
+      sthread_cond_wait(request_ready, requests_lock);
+    }
+
+    // sanity check
+    if (!queue_remove(requests, next_conn)){
+      printf("Error line 95\n");
+    }
+
+    sthread_mutex_unlock(requests_lock);
+    
+    web_handle_connection(*next_conn, (char*)args);
+  }
+}
 
 /* Run the webserver. Our host is given, as well as the port to listen
  * on, and the directory that the documents can be found in.
  * Runs forever.
  */
-void web_runloop(const char *host, int port, const char *docroot) {
+void web_runloop(const char *host, int port, const char *docroot, int num_threads) {
   int listen_socket, next_conn;
+  
+  //  queue* thread_queue = queue_create();
+
+  // create a queue to hold the incoming requests
+  requests = queue_create();
+  
+  /*
+  // create args struct to pass arguments to the worker thread's functions
+  arguments args = (arguments)malloc(sizeof(struct _arguments));
+  args->docroot = docroot;
+  args->requests = requests;
+  */
+
+  // create the worker threads
+  sthread_t threads[num_threads];
+  int i;  
+  for (i = 0; i < num_threads; i++){
+    threads[i] = sthread_create(worker, (void*)docroot, 0);
+  }
+
+  // initialize the mutex and condition variable
+  request_ready = sthread_cond_init();
+  requests_lock = sthread_mutex_init();
 
   listen_socket = web_setup_socket(port);
 
   while ((next_conn = web_next_connection(listen_socket)) >= 0) {
-    web_handle_connection(next_conn, docroot);
+    //    web_handle_connection(next_conn, docroot);
+    sthread_mutex_lock(requests_lock);
+    queue_append(requests, next_conn); // possible error since next_conn isn't a void*
+    sthread_mutex_unlock(requests_lock);
+    sthread_cond_signal(request_ready);
   }
+
+  // free everything
+  for (i = 0; i < num_threads; i++){
+    free(threads[i]);
+  }
+
+  sthread_mutex_free(requests_lock);
+  sthread_cond_free(request_ready);
+
+  free(requests);
 
   close(listen_socket);
 }
