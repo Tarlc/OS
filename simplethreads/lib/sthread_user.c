@@ -76,7 +76,7 @@ void sthread_user_init(void) {
   
   initted = 1;
 
-  sthread_preemption_init(sthread_user_dispatcher,50);
+  sthread_preemption_init(sthread_user_dispatcher,10);
 }
 
 
@@ -305,6 +305,7 @@ void sthread_user_mutex_lock(sthread_mutex_t lock) {
   if (atomic_test_and_set(&(lock->lock))){
 
     int oldvalue = splx(HIGH);
+    sthread_enqueue(lock->waiting_threads, active_thread);
     /*
     sthread_t temp = active_thread;
     active_thread = sthread_dequeue(thread_queue);
