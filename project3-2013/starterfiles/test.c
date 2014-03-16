@@ -148,8 +148,13 @@ int main(int argc, char* argv[]) {
 	    LOG_PRINTF("ERROR failed to read root");
 	    return -1;
 	  }
-	  if (inode_num < 25)
-	    LOG_PRINTF("delete time: %d\n", inode->i_dtime);
+	  if (inode->i_dtime > 0){
+	    // create a file, write deleted contents to it 
+	    restore_file(inode);
+	  }
+	  // assume inodes are assigned sequentially
+	  else
+	    break;
 	}
       }
     }
