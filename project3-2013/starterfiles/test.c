@@ -276,7 +276,7 @@ int main(int argc, char* argv[]) {
 		LOG_PRINTF("ERROR failed to read root");
 		return -1;
 	      }
-
+	      /*
 	      int new_file = create_file(fs_dir, inode_num + (a * sb->s_inodes_per_group));
 	      if (new_file == -1) return -1;
 	      int res = restore_data(inode, inode_num, fd, new_file, block_size);
@@ -286,7 +286,7 @@ int main(int argc, char* argv[]) {
 	      if (res == -1){
 		LOG_PRINTF("FAILED TO CLOSE FILE\n");
 		return -1;
-		}
+		}*/
 	    }
 	      
 
@@ -304,6 +304,17 @@ int main(int argc, char* argv[]) {
 
 	    if (inode->i_dtime > 0){
 	      LOG_PRINTF("inode_num of deleted block: %d\n", inode_num);
+	      int new_file = create_file(fs_dir, inode_num + (a * sb->s_inodes_per_group));
+	      if (new_file == -1) return -1;
+	      int res = restore_data(inode, inode_num, fd, new_file, block_size);
+	      if (res == -1){
+		LOG_PRINTF("FAILED TO COPY INODE %d\n", inode_num);
+	      }
+	      res = close(new_file);
+	      if (res == -1){
+		LOG_PRINTF("FAILED TO CLOSE FILE\n");
+		return -1;
+	      }
 	    }
 	      
 	  }
