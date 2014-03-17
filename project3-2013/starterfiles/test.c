@@ -43,13 +43,15 @@ struct ext2_super_block* get_super_block(int fd) {
 int create_file(char *dir_path, int inode_num){
   char filepath[1000];
   strcpy(filepath, dir_path);
+  filepath[strlen(dir_path)] = '/';
+  filepath[strlen(dir_path)+1] = '\0';  
   char filename[20] = "file-";
   char num[15];
   sprintf(num, "%d", inode_num);
   strcat(filename, num);
   strcat(filepath, filename);
-  int fd = open(filepath, O_RDWR | O_CREAT);
-  if(fd==0){
+  int fd = open(filepath, O_RDONLY | O_CREAT);
+  if(fd == -1){
     LOG_PRINTF("Error: could not create file\n");
   }
   return fd;
@@ -204,6 +206,21 @@ int main(int argc, char* argv[]) {
 	  if (1<<i & buf[j]){
 	    LOG_PRINTF("USED INODE: %d\n", i + (j*8) + (k*8));
 	    //	  if ((i+(j*8)+(k*8))>12) return -1;
+	   
+	    if (inode_num > 10 || a != 0){
+	      int new_file = create_file(fs_dir, inode_num + (a * sb->s_inodes_per_group));
+	      if (new_file == -1) return -1;
+	      // write stuff
+	      int res = change_file_times(new_file, inode->i_atime, inode->i_mtime);
+	      res = close(new_file);
+	      if (res == -1){
+		LOG_PRINTF("FAILED TO CLOSE FILE\n");
+		return -1;
+	      }
+	    }
+
+
+ 
 	  }
 	  else{
 	    // seek to free inode to see if it had previously been deleted
