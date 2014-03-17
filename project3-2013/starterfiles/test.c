@@ -107,6 +107,9 @@ int main(int argc, char* argv[]) {
   struct ext2_group_desc *gd = malloc(sizeof(struct ext2_group_desc));
   if (gd == NULL) return -1;
 
+  struct ext2_inode *inode = malloc(sizeof(struct ext2_inode));
+  if (inode == NULL) return -1;
+
   int a;
   for (a = 0; a < group_count; a++){
     lseek(fd, SUPERBLOCK_OFFSET + block_size + a*sizeof(struct ext2_group_desc), SEEK_SET);
@@ -116,14 +119,10 @@ int main(int argc, char* argv[]) {
       return -1;
     }
     
-    LOG_PRINTF("%d\n", gd->bg_inode_table);
-    
-    LOG_PRINTF("bitmap: %d\n", gd->bg_inode_bitmap);
-    LOG_PRINTF("table: %d\n", gd->bg_inode_table);
 
     lseek(fd, gd->bg_inode_bitmap * block_size, SEEK_SET);
     
-    LOG_PRINTF("num inodes: %d\n", sb->s_inodes_count);
+    LOG_PRINTF("BLOCK GROUP NUMBER: %d\n", a);
   
 
     // number of bytes in the inode_bitmap
@@ -131,7 +130,12 @@ int main(int argc, char* argv[]) {
 
     char buf[128];
     int k = 0;
-    for (bytes_to_read = (sb->s_inodes_per_group/8); bytes_to_read > 0; bytes_to_read -= 128){
+
+    LOG_PRINTF("inodes per group: %d\n", sb->s_inodes_per_group);
+    LOG_PRINTF("total inodes: %d\n", sb->s_inodes_count);
+    LOG_PRINTF("number of groups: %d\n", group_count);
+
+    for (bytes_to_read = (sb->s_inodes_per_group/8)-1; bytes_to_read > 0; bytes_to_read -= 128){
       int buf_size;
       if (bytes_to_read < 128)
 	buf_size = bytes_to_read;
@@ -161,22 +165,28 @@ int main(int argc, char* argv[]) {
 	for (i = 0; i < 8; i++){
 	  int inode_num = i + (j*8) + (k*8);
 	  if (1<<i & buf[j]){
-	    LOG_PRINTF("%d\n", i + (j*8) + (k*8));
+	    LOG_PRINTF("USED INODE: %d\n", i + (j*8) + (k*8));
 	    //	  if ((i+(j*8)+(k*8))>12) return -1;
 	  }
 	  else{
 	    // seek to free inode to see if it had previously been deleted
 	    lseek(fd, (block_size * gd->bg_inode_table) + (inode_num * sizeof(struct ext2_inode)), SEEK_SET);
-	    struct ext2_inode *inode = malloc(sizeof(struct ext2_inode));
+
 	    r = read(fd, inode, sizeof(struct ext2_inode));
 	    if (r != sizeof(struct ext2_inode)){
 	      LOG_PRINTF("ERROR failed to read root");
 	      return -1;
 	    }
-	    if (inode->i_dtime > 0){
+	    /*
+	    if (inode_num < 15){
+	      LOG_PRINTF("inode_num: %d\n", inode_num);
 	      LOG_PRINTF("i_blocks: %d\n", inode->i_blocks);
 	      LOG_PRINTF("inode size: %d\n", inode->i_size);
 	      LOG_PRINTF("first data block: %d\n", inode->i_block[0]);
+	    }
+	    */
+	    if (inode->i_dtime > 0){
+	      LOG_PRINTF("inode_num of deleted block: %d\n", inode_num);
 
 	      // create a file, write deleted contents to it 
 	      //	    restore_file(inode);
@@ -197,8 +207,8 @@ int main(int argc, char* argv[]) {
 
 	    }
 	      // assume inodes are assigned sequentially
-	    else
-	      break;
+	    /*	    else
+		    break; */
 	  }
 	}
       }
