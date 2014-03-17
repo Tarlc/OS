@@ -40,12 +40,15 @@ struct ext2_super_block* get_super_block(int fd) {
 }
 
 
-int create_file(int inode_num){
+int create_file(char *dir_path, int inode_num){
+  char filepath[1000];
+  strcpy(filepath, dir_path);
   char filename[20] = "file-";
   char num[15];
   sprintf(num, "%d", inode_num);
-  strcpy(filename, num);
-  int fd = open(filename, O_RDWR | O_CREAT);
+  strcat(filename, num);
+  strcat(filepath, filename);
+  int fd = open(filepath, O_RDWR | O_CREAT);
   if(fd==0){
     LOG_PRINTF("Error: could not create file\n");
   }
