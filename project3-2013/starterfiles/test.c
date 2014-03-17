@@ -38,6 +38,27 @@ struct ext2_super_block* get_super_block(int fd) {
 
 }
 
+
+int change_file_times(int fd, int a_time, int m_time) {
+  struct timeval *atime = malloc(sizeof(struct timeval));
+  atime->tv_sec = a_time;
+  atime->tv_usec = 0;
+  struct timeval *mtime = malloc(sizeof(struct timeval));
+  mtime->tv_sec = m_time;
+  mtime->tv_usec = 0;
+  struct timeval times[2];
+  times[0] = *atime;
+  times[1] = *mtime;
+  int r = futimes(fd, times);
+  free(atime);
+  free(mtime);
+  if (r != 0){
+    printf("Error: could not change access and modification times\n");
+    return -1;
+  }
+  return 0;
+}
+
 int main(int argc, char* argv[]) {
   int r;
 
