@@ -50,7 +50,7 @@ int create_file(char *dir_path, int inode_num){
   sprintf(num, "%d", inode_num);
   strcat(filename, num);
   strcat(filepath, filename);
-  int fd = open(filepath, O_RDONLY | O_CREAT);
+  int fd = open(filepath, O_RDWR | O_CREAT, 0666);
   if(fd == -1){
     LOG_PRINTF("Error: could not create file\n");
   }
@@ -76,7 +76,82 @@ int change_file_times(int fd, int a_time, int m_time) {
   }
   return 0;
 }
+int restore_data(struct ext2_inode *inode, int inode_num, int fd, int new_file, int block_size){ 
+  LOG_PRINTF("inode_num of restored block: %d\n", inode_num);
+  int x, r, read_amount, wcode;
+  int inode_size = inode->i_size;
+  LOG_PRINTF("INODE SIZE: %d\n", inode_size);
+  for(x = 0;  x < (inode->i_blocks/(block_size/512)); x++){
+    LOG_PRINTF("TEST\n");
+    //no data block indirection
+    int ppb = (block_size/4);
+    LOG_PRINTF("ppb: %d\n", ppb);
+    char buffer[block_size];
+    char pointer[4];
+    if (inode_size < block_size){
+      read_amount = block_size;
+      inode_size -= block_size;
+    }
+    else
+      read_amount = block_size;
 
+    LOG_PRINTF("read_amount: %d\n", read_amount);
+    if(x < EXT2_NDIR_BLOCKS){
+      lseek(fd, block_size * inode->i_block[x], SEEK_SET);
+      r = read(fd, buffer, read_amount);
+      if (r != read_amount){
+	LOG_PRINTF("FAILED TO READ\n");
+	return -1;
+      }
+      //write
+      LOG_PRINTF("BUFFER: %s\n", buffer);
+      wcode = write( new_file, buffer, read_amount);
+      if (wcode != read_amount){
+	LOG_PRINTF("FAILED TO WRITE\n");
+	return -1;
+      }
+      LOG_PRINTF("testtestest\n");
+    } else if (x < EXT2_NDIR_BLOCKS + ppb){//one level of inderection
+      lseek(fd, block_size * inode->i_block[EXT2_NDIR_BLOCKS] + (x- EXT2_NDIR_BLOCKS)*4, SEEK_SET);
+      r = read(fd, pointer, 4);
+      lseek(fd, block_size * (*(int *)pointer), SEEK_SET);
+      r = read(fd, buffer, block_size);
+      //write
+      wcode = write( new_file, buffer, block_size);
+      
+    } else if (x < EXT2_NDIR_BLOCKS + ppb + ppb*ppb){//two levels of inderection
+      //subtract so value is between 0 and 65536 
+      int hello = x - EXT2_NDIR_BLOCKS - ppb;
+      int block = hello/256;
+      
+      lseek(fd, block_size * inode->i_block[EXT2_DIND_BLOCK] + block*4, SEEK_SET);
+      r = read(fd, pointer, 4);
+      lseek(fd, block_size * (*(int *)pointer) + (hello%256)*4, SEEK_SET);
+      r = read(fd, pointer, 4);
+      lseek(fd, block_size * (*(int *)pointer), SEEK_SET);
+      r = read(fd, buffer, block_size);
+      wcode = write( new_file, buffer, block_size);
+      
+    } else if (x < EXT2_NDIR_BLOCKS + ppb + ppb*ppb + ppb*ppb*ppb){//three levels of inderection
+      int hello = x - EXT2_NDIR_BLOCKS - ppb - ppb*ppb;
+      int block = hello/65536;
+      
+      
+      lseek(fd, block_size * inode->i_block[EXT2_TIND_BLOCK] + block*4, SEEK_SET);
+      r = read(fd, pointer, 4);
+      int second_block = hello - block*65536;
+      int final_block = second_block/256;
+      
+      
+      lseek(fd, block_size * (*(int *)pointer) + final_block*4, SEEK_SET);
+      r = read(fd, buffer, block_size);
+      wcode = write( new_file, buffer, block_size);
+    }
+    else return -1;//too big
+  }
+  return 0;
+}  
+  
 int main(int argc, char* argv[]) {
   int r;
 
@@ -186,19 +261,6 @@ int main(int argc, char* argv[]) {
 	return -1;
       }
       
-      
-      /*
-	if (1 & buf[1])
-	LOG_PRINTF("first value is the right most bit of the byte\n");
-	else{
-	if (1<<7 & buf[1])
-	LOG_PRINTF("first value is the left most bit of the byte\n");
-	else
-	LOG_PRINTF("WTF!\n");
-	}
-	if (1<<7 & buf[1])
-	LOG_PRINTF("first value is the left most bit of the byte\n");
-      */
       int i, j;
       for (j = 0; j < buf_size; j++){
 	for (i = 0; i < 8; i++){
@@ -206,63 +268,44 @@ int main(int argc, char* argv[]) {
 	  if (1<<i & buf[j]){
 	    LOG_PRINTF("USED INODE: %d\n", i + (j*8) + (k*8));
 	    //	  if ((i+(j*8)+(k*8))>12) return -1;
-	   
 	    if (inode_num > 10 || a != 0){
+	      	      lseek(fd, (block_size * gd->bg_inode_table) + (inode_num * sizeof(struct ext2_inode)), SEEK_SET);
+
+	      r = read(fd, inode, sizeof(struct ext2_inode));
+	      if (r != sizeof(struct ext2_inode)){
+		LOG_PRINTF("ERROR failed to read root");
+		return -1;
+	      }
+
 	      int new_file = create_file(fs_dir, inode_num + (a * sb->s_inodes_per_group));
 	      if (new_file == -1) return -1;
-	      // write stuff
-	      int res = change_file_times(new_file, inode->i_atime, inode->i_mtime);
+	      int res = restore_data(inode, inode_num, fd, new_file, block_size);
+	      res = change_file_times(new_file, inode->i_atime, inode->i_mtime);
+	      LOG_PRINTF("res: %d\n", res);
 	      res = close(new_file);
 	      if (res == -1){
 		LOG_PRINTF("FAILED TO CLOSE FILE\n");
 		return -1;
-	      }
+		}
 	    }
+	      
 
-
- 
+	    
 	  }
 	  else{
 	    // seek to free inode to see if it had previously been deleted
 	    lseek(fd, (block_size * gd->bg_inode_table) + (inode_num * sizeof(struct ext2_inode)), SEEK_SET);
-
+	    
 	    r = read(fd, inode, sizeof(struct ext2_inode));
 	    if (r != sizeof(struct ext2_inode)){
 	      LOG_PRINTF("ERROR failed to read root");
 	      return -1;
 	    }
-	    /*
-	    if (inode_num < 15){
-	      LOG_PRINTF("inode_num: %d\n", inode_num);
-	      LOG_PRINTF("i_blocks: %d\n", inode->i_blocks);
-	      LOG_PRINTF("inode size: %d\n", inode->i_size);
-	      LOG_PRINTF("first data block: %d\n", inode->i_block[0]);
-	    }
-	    */
+
 	    if (inode->i_dtime > 0){
 	      LOG_PRINTF("inode_num of deleted block: %d\n", inode_num);
-
-	      // create a file, write deleted contents to it 
-	      //	    restore_file(inode);
-	      int x;
-	      for(x = 0;  x < inode->i_blocks/(block_size/512); x++){
-		LOG_PRINTF("TEST\n");	
-		int ppb = block_size/4;
-		LOG_PRINTF("ppb: %d\n", ppb);
-		char pointer[4];
-		char buffer[128];
-
-		lseek(fd, block_size * inode->i_block[x], SEEK_SET);
-		r = read(fd, buffer, 127);
-		buffer[127] = '\0';
-		LOG_PRINTF("data: %s", buffer);
-		LOG_PRINTF("inode to be restored: %d\n", inode_num);
-	      }
-
 	    }
-	      // assume inodes are assigned sequentially
-	    /*	    else
-		    break; */
+	      
 	  }
 	}
       }
