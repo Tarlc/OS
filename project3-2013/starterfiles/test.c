@@ -8,6 +8,7 @@
 #include "ext2fs.h"
 #include <errno.h>
 #include <error.h>
+#include <sys/time.h>
 
 #define CSE451_DEBUG
 #ifdef CSE451_DEBUG
@@ -24,7 +25,7 @@ struct ext2_super_block* get_super_block(int fd) {
   int r = read(fd, ret, sizeof(struct ext2_super_block));
 
   if (r != sizeof(struct ext2_super_block)){
-    printf("Error: could not read super block\n");
+    LOG_PRINTF("Error: could not read super block\n");
     free (ret);
     return NULL;
   }
@@ -36,6 +37,42 @@ struct ext2_super_block* get_super_block(int fd) {
   
   return ret;
 
+}
+
+
+int create_file(char *dir_path, int inode_num){
+  char filepath[1000];
+  strcpy(filepath, dir_path);
+  char filename[20] = "file-";
+  char num[15];
+  sprintf(num, "%d", inode_num);
+  strcat(filename, num);
+  strcat(filepath, filename);
+  int fd = open(filepath, O_RDWR | O_CREAT);
+  if(fd==0){
+    LOG_PRINTF("Error: could not create file\n");
+  }
+  return fd;
+}
+
+int change_file_times(int fd, int a_time, int m_time) {
+  struct timeval *atime = malloc(sizeof(struct timeval));
+  atime->tv_sec = a_time;
+  atime->tv_usec = 0;
+  struct timeval *mtime = malloc(sizeof(struct timeval));
+  mtime->tv_sec = m_time;
+  mtime->tv_usec = 0;
+  struct timeval times[2];
+  times[0] = *atime;
+  times[1] = *mtime;
+  int r = futimes(fd, times);
+  free(atime);
+  free(mtime);
+  if (r != 0){
+    LOG_PRINTF("Error: could not change access and modification times\n");
+    return -1;
+  }
+  return 0;
 }
 
 int main(int argc, char* argv[]) {
